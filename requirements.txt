@@ -1,6 +1,6 @@
-# Deployed app only (Streamlit). Pinned for Python 3.11; same versions as environment.yml.
+# Deployed app only (Streamlit). Pinned for Python 3.11; same versions as pipeline/environment.yml.
 # The app must never import GDAL/osgeo, GeoPandas or Shapely (checked by tests/test_repo.py).
-# The offline pipeline and the tests need environment.yml (conda), which has everything.
+# The offline pipeline and the tests need pipeline/environment.yml (conda), which has everything.
 streamlit==1.67.0
 plotly==7.1.0
 numpy==2.4.6

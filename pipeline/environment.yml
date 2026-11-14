@@ -1,5 +1,6 @@
 # conda env for the offline pipeline and the tests: everything in requirements.txt (the app) plus
 # GDAL (for the vendored NASA MMGIS scripts), GeoPandas, Shapely, astroquery, Numba, joblib.
+# Lives in pipeline/ so Streamlit Community Cloud (which prefers environment.yml at the root) only sees requirements.txt.
 # Create with `make env`. Versions resolved from conda-forge on 2026-11-14.
 name: lunar-nav
 channels:
@@ -30,4 +31,4 @@ dependencies:
   - pytest=9.2.0
   - pip
   - pip:
-      - -e .
+      - -e ..   # repo root (pip runs from this file's folder)

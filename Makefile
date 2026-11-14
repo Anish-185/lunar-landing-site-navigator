@@ -4,7 +4,7 @@ PY ?= python
 .PHONY: env data derived test app
 
 env:  ## create the conda env (Python 3.11, GDAL from conda-forge)
-	mamba env create -f environment.yml || conda env create -f environment.yml
+	mamba env create -f pipeline/environment.yml || conda env create -f pipeline/environment.yml
 
 data:  ## download raw data into data/raw/
 	$(PY) -m pipeline.fetch_data

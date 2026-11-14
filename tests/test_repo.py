@@ -39,7 +39,7 @@ def test_derived_files_under_50_mb():
 
 def _dependency_names() -> list[str]:
     lines = (ROOT / "requirements.txt").read_text().splitlines()
-    env = yaml.safe_load((ROOT / "environment.yml").read_text())
+    env = yaml.safe_load((ROOT / "pipeline" / "environment.yml").read_text())
     lines += [d for d in env["dependencies"] if isinstance(d, str)]
     names = []
     for line in lines:

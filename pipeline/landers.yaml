@@ -1,11 +1,82 @@
-# Lander presets. Filled in Phase 4. Label every value "illustrative - edit me" unless a source is cited.
-# Each entry, keyed by preset id:
+# Lander presets for power, comms and landing-ellipse scoring.
+# Every numeric field has an entry in `sources`: either a citation (text + URL) or exactly "illustrative - edit me".
+# pipeline/sites.py refuses a preset with a numeric field that has no source.
 #   name:            display name
 #   cruise_days:     launch to landing
-#   ellipse_sigma_m: 1-sigma landing dispersion
+#   ellipse_sigma_m: 1-sigma landing dispersion (each axis)
 #   array_W:         solar array peak power
 #   battery_Wh:      usable battery capacity
 #   load_W:          average load during night
-#   panel:           vertical | horizontal
-#   source:          URL, or "illustrative - edit me"
-landers: {}
+#   panel:           vertical | horizontal (vertical = side-mounted, power ~ cos(sun el); horizontal ~ sin(sun el))
+
+landers:
+  nova_c:
+    name: Intuitive Machines Nova-C (IM-1, IM-2)
+    cruise_days: 7.7
+    ellipse_sigma_m: 50
+    array_W: 200
+    battery_Wh: 1500
+    load_W: 100
+    panel: vertical
+    sources:
+      cruise_days: "IM-2 launch 2025-02-27 00:16:30 UTC, landing 2025-03-06 17:28:50 UTC (https://en.wikipedia.org/wiki/IM-2); IM-1 took the same 7.7 days (https://en.wikipedia.org/wiki/IM-1)"
+      ellipse_sigma_m: illustrative - edit me
+      array_W: illustrative - edit me
+      battery_Wh: illustrative - edit me
+      load_W: illustrative - edit me
+  blue_ghost:
+    name: Firefly Blue Ghost
+    cruise_days: 46.1
+    ellipse_sigma_m: 50
+    array_W: 400
+    battery_Wh: 2000
+    load_W: 150
+    panel: vertical
+    sources:
+      cruise_days: "Launch 2025-01-15 06:11:39 UTC, landing 2025-03-02 08:34 UTC (https://en.wikipedia.org/wiki/Blue_Ghost_Mission_1)"
+      ellipse_sigma_m: illustrative - edit me
+      array_W: illustrative - edit me
+      battery_Wh: illustrative - edit me
+      load_W: illustrative - edit me
+  vikram:
+    name: ISRO Vikram (Chandrayaan-3)
+    cruise_days: 40.1
+    ellipse_sigma_m: 1000
+    array_W: 738
+    battery_Wh: 1500
+    load_W: 150
+    panel: vertical
+    sources:
+      cruise_days: "Launch 2023-07-14 09:05:17 UTC, landing 2023-08-23 12:34 UTC (https://en.wikipedia.org/wiki/Chandrayaan-3)"
+      ellipse_sigma_m: illustrative - edit me
+      array_W: "Lander module power 738 W, as listed in the infobox of https://en.wikipedia.org/wiki/Chandrayaan-3"
+      battery_Wh: illustrative - edit me
+      load_W: illustrative - edit me
+  blue_moon_mk1:
+    name: Blue Origin Blue Moon MK1
+    cruise_days: 10
+    ellipse_sigma_m: 50
+    array_W: 1000
+    battery_Wh: 5000
+    load_W: 300
+    panel: vertical
+    sources:
+      cruise_days: illustrative - edit me
+      ellipse_sigma_m: illustrative - edit me
+      array_W: illustrative - edit me
+      battery_Wh: illustrative - edit me
+      load_W: illustrative - edit me
+  precision_100m:
+    name: Generic precision lander (Artemis-class, 100 m)
+    cruise_days: 5
+    ellipse_sigma_m: 33
+    array_W: 3000
+    battery_Wh: 20000
+    load_W: 1000
+    panel: vertical
+    sources:
+      cruise_days: illustrative - edit me
+      ellipse_sigma_m: "Artemis requires landing within 100 m of the target (https://ntrs.nasa.gov/api/citations/20250009323/downloads/ArtemisOverview2025IntSPAPPSChallenge.pdf); 33 m = 100 m / 3 (3-sigma) is our assumption"
+      array_W: illustrative - edit me
+      battery_Wh: illustrative - edit me
+      load_W: illustrative - edit me

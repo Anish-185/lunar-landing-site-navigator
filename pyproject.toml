@@ -1,5 +1,5 @@
 # Makes navigator/ and pipeline/ importable from app/ and tests/ (`pip install -e .`).
-# Pinned dependencies live in requirements.txt and environment.yml.
+# Pinned dependencies live in requirements.txt and pipeline/environment.yml.
 [build-system]
 requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"

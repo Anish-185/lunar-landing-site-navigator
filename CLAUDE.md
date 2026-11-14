@@ -54,8 +54,8 @@ make app       # streamlit run app/Home.py
 - Work one phase (build kit prompt) at a time. Each phase ends with `make test` passing, then a commit `Phase N: <what>` and a push to GitHub (`origin main`).
 - Two dependency sets, same pins:
   - `requirements.txt` = the deployed app only: streamlit, plotly, numpy, pandas, pyarrow, scipy, spiceypy, skyfield, rasterio, pyproj, pyyaml.
-  - `environment.yml` = everything (app + pipeline + tests), including GDAL, GeoPandas, Shapely, astroquery, Numba, joblib.
-  - A new app dependency goes in both files; a pipeline-only one goes in `environment.yml` only. Either way, add it to `ATTRIBUTIONS.md` in the same change.
+  - `pipeline/environment.yml` = everything (app + pipeline + tests), including GDAL, GeoPandas, Shapely, astroquery, Numba, joblib. It stays in `pipeline/`, never the repo root: Streamlit Community Cloud prefers a root `environment.yml` over `requirements.txt`.
+  - A new app dependency goes in both files; a pipeline-only one goes in `pipeline/environment.yml` only. Either way, add it to `ATTRIBUTIONS.md` in the same change.
 - **`app/` and `navigator/` never import `osgeo`, `geopandas`, `shapely`** (or other pipeline-only packages). `tests/test_repo.py` enforces it. Whatever needs them is precomputed by the pipeline, e.g. PSR distances per site and per ellipse point, and `data/derived/psr_outlines.geojson` (simplified, < 5 MB, drawn with Plotly).
 - Custom lat/lon sites compute their horizon at runtime from `data/derived/dem_80s_160m.tif` (LDEM_80S_80MPP_ADJ averaged to 160 m). The vendored MMGIS HorizonProfile.py runs there on `navigator.geo.gdal_compat` / `osr_compat` (rasterio + pyproj stand-ins), not on GDAL. The UI labels these sites "coarser terrain (160 m) than catalog sites".
 - No static image export library: PNGs come from Plotly's built-in download button, and the decision brief embeds charts as HTML.

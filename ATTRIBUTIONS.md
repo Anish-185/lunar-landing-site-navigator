@@ -10,6 +10,19 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | LOLA south polar DEM and slope 20 m (`LDEM_80S_20MPP_ADJ.TIF`, `LDSM_80S_20MPP_ADJ.TIF`); PGDA product 90 | as above | NASA public data | Near-field horizons and landing-zone slope; read remotely in windows (`/vsicurl/`), not stored | https://pgda.gsfc.nasa.gov/products/90 |
 | LOLA average Sun and Earth visibility maps (`AVGVISIB_85S_060M_201608[_EARTH].TIF`, `AVGVISIB_75S_120M_201608[_EARTH].TIF`); PGDA product 69 | NASA GSFC. Cite: Mazarico et al. (2011), Icarus 211, 1066–1081, doi:10.1016/j.icarus.2010.10.030 | NASA public data | Map layer; validation of our long-run sunlit and Earth-visible fractions | https://pgda.gsfc.nasa.gov/products/69 |
 | NAIF SPICE generic kernels: `naif0012.tls`, `pck00011.tpc`, `de440s.bsp`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf` | NASA JPL NAIF | NASA public data | Sun/Earth ephemeris (DE440), lunar orientation and the `MOON_ME` frame | https://naif.jpl.nasa.gov/pub/naif/generic_kernels/ |
+| JPL Horizons (apparent Sun and Earth AZ/EL for observers on the Moon) | NASA JPL Solar System Dynamics | NASA public service | Validation reference for our ephemeris; responses cached in `tests/fixtures/horizons.csv` | https://ssd.jpl.nasa.gov/horizons/ |
+
+## Site catalog sources (`pipeline/sites.yaml`, `pipeline/landers.yaml`)
+
+| Source | What we took | Link |
+|---|---|---|
+| NASA release 24-136, "NASA Provides Update on Artemis III Moon Landing Regions" (28 Oct 2024), region map (NASA/GSFC/ASU/JSC/AGDT) | The nine region names; region centres measured from the map | https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/ |
+| LROC (NASA/GSFC/Arizona State University), images 1401, 1408, 1360, 1400 | IM-2 target and resting spot; IM-1 position and touchdown time; Blue Ghost 1 landing region | https://lroc.im-ldi.com/images/1401, https://lroc.im-ldi.com/images/1408, https://lroc.im-ldi.com/images/1360, https://www.lroc.im-ldi.com/images/1400 |
+| NSSDC, Apollo landing site coordinates (Wagner et al. 2017, Icarus 283) | Apollo 11 Lunar Module position | https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html |
+| Gracy & Lee (2024), LPSC 55, abstract 1695 | Connecting Ridge site used for Blue Moon MK1 | https://www.hou.usra.edu/meetings/lpsc2024/pdf/1695.pdf |
+| arXiv 2406.19863, "Evaluating potential landing sites for the Artemis III mission using a multi-criteria decision making approach" | Cross-check points for Nobile Rim 2 and de Gerlache Rim 2 | https://arxiv.org/abs/2406.19863 |
+| Wikipedia (CC BY-SA; facts only, no text copied): Statio Shiv Shakti, Chang'e 7, IM-1, IM-2, Blue Ghost Mission 1, Chandrayaan-3 | Chandrayaan-3 and Chang'e-7 coordinates; launch and landing times; Vikram lander power | https://en.wikipedia.org/wiki/Statio_Shiv_Shakti and the other article titles |
+| NASA, Blue Moon MK1 CLPS flight page | MK1 targets the Shackleton Connecting Ridge | https://www.nasa.gov/event/clps-flight-blue-origins-blue-moon-mark-1/ |
 
 ## Open-source libraries
 
@@ -29,7 +42,7 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | pyproj (wraps PROJ, MIT) | MIT | Polar stereographic projection; backs the OSR stand-in in `navigator/geo.py` | https://github.com/pyproj4/pyproj |
 | PyYAML | MIT | Site and lander catalogs | https://github.com/yaml/pyyaml |
 
-### Offline pipeline and tests only (`environment.yml`, on top of the above)
+### Offline pipeline and tests only (`pipeline/environment.yml`, on top of the above)
 
 | Library | License | Use | Link |
 |---|---|---|---|
