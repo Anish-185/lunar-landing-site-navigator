@@ -1,0 +1,11 @@
+# Site catalog. Filled in Phase 4 with coordinates from cited pages (never from memory).
+# Each entry:
+#   id:          short slug, used in data/derived file names (e.g. im2_actual)
+#   name:        display name
+#   group:       artemis_region | clps | international | apollo
+#   lat, lon:    degrees, planetocentric, east-positive, MOON_ME
+#   source_url:  page the coordinate comes from
+#   note:        e.g. "approximate region centre" or "coordinate not published"
+#   landing_utc: ISO 8601 with Z (flown missions only)
+#   target:      {lat, lon} published target, when it differs from the actual spot (flown missions only)
+sites: []

@@ -1,0 +1,11 @@
+# Lander presets. Filled in Phase 4. Label every value "illustrative - edit me" unless a source is cited.
+# Each entry, keyed by preset id:
+#   name:            display name
+#   cruise_days:     launch to landing
+#   ellipse_sigma_m: 1-sigma landing dispersion
+#   array_W:         solar array peak power
+#   battery_Wh:      usable battery capacity
+#   load_W:          average load during night
+#   panel:           vertical | horizontal
+#   source:          URL, or "illustrative - edit me"
+landers: {}

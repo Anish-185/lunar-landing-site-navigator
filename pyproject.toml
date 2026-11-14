@@ -1,0 +1,19 @@
+# Makes navigator/ and pipeline/ importable from app/ and tests/ (`pip install -e .`).
+# Pinned dependencies live in requirements.txt and environment.yml.
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lunar-landing-site-navigator"
+version = "0.0.0"
+requires-python = ">=3.11,<3.12"
+license = "Apache-2.0"
+
+[tool.setuptools]
+packages = ["navigator", "pipeline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not network'"
+markers = ["network: needs internet access (run with: pytest -m network)"]

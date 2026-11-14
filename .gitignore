@@ -1,0 +1,25 @@
+# Raw downloads (large; re-create with `make data`)
+data/raw/*
+!data/raw/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+build/
+dist/
+
+# Notebooks, editors, OS
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+
+# Streamlit secrets (the app needs none; keep it that way)
+.streamlit/secrets.toml
+
+# Planning docs (competitive analysis): local only, keep out of the public repo
+docs/plan/
