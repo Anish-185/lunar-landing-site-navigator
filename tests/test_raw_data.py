@@ -12,7 +12,7 @@ MAGIC = {
     ".shp": (b"\x00\x00\x27\x0a",), ".shx": (b"\x00\x00\x27\x0a",),
     ".bsp": (b"DAF/SPK",), ".bpc": (b"DAF/PCK",),
     ".tls": (b"KPL/LSK",), ".tpc": (b"KPL/PCK",), ".tf": (b"KPL/FK",),
-    ".dbf": (b"\x03",), ".prj": (b"PROJCS", b"GEOGCS"),
+    ".dbf": (b"\x03",), ".prj": (b"PROJCS", b"GEOGCS"), ".zip": (b"PK\x03\x04",),
 }
 
 

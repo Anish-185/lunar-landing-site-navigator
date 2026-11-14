@@ -43,8 +43,14 @@ def load_sites(path: Path = HERE / "sites.yaml") -> list[dict]:
             if not str(s["landing_utc"]).endswith("Z"):
                 raise ValueError(f"{where}: landing_utc must be ISO 8601 UTC ending in Z")
             datetime.fromisoformat(str(s["landing_utc"]).replace("Z", "+00:00"))
+        if s.get("lander") not in _lander_keys():
+            raise ValueError(f"{where}: lander {s.get('lander')!r} not in landers.yaml")
         s["in_polar_dem"] = s["lat"] <= POLAR_DEM_LAT
     return sites
+
+
+def _lander_keys() -> set[str]:
+    return set(yaml.safe_load((HERE / "landers.yaml").read_text())["landers"])
 
 
 def load_landers(path: Path = HERE / "landers.yaml") -> dict[str, dict]:

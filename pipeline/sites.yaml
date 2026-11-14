@@ -8,6 +8,7 @@
 #   note:        provenance, precision, caveats ("approximate" when not a published point)
 #   landing_utc: ISO 8601 with Z (flown missions only)
 #   target:      {lat, lon} published target, when it differs from the actual spot (flown missions only)
+#   lander:      default preset from landers.yaml (sets the landing-ellipse sigma for this site)
 #
 # Artemis III regions: NASA publishes no coordinates, only a map (RELEASE24-136, 28 Oct 2024). Centres were measured
 # from that map: box centre in pixels -> polar stereographic x/y using the map's pole marker and 50 km scale bar
@@ -24,6 +25,7 @@ sites:
     lon: -68.7
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 region map (no published coordinates).
+    lander: precision_100m
   - id: artemis_haworth
     name: Haworth
     group: artemis_region
@@ -31,6 +33,7 @@ sites:
     lon: -22.6
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 region map (no published coordinates).
+    lander: precision_100m
   - id: artemis_malapert_massif
     name: Malapert Massif
     group: artemis_region
@@ -38,6 +41,7 @@ sites:
     lon: 0.0
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 region map (no published coordinates).
+    lander: precision_100m
   - id: artemis_mons_mouton_plateau
     name: Mons Mouton Plateau
     group: artemis_region
@@ -45,6 +49,7 @@ sites:
     lon: 30.6
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate centre of a large (~78 x 59 km) region, measured from NASA's Oct 2024 map. IM-2's target lies inside it.
+    lander: precision_100m
   - id: artemis_mons_mouton
     name: Mons Mouton
     group: artemis_region
@@ -52,6 +57,7 @@ sites:
     lon: 31.7
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 region map (no published coordinates).
+    lander: precision_100m
   - id: artemis_nobile_rim_1
     name: Nobile Rim 1
     group: artemis_region
@@ -59,6 +65,7 @@ sites:
     lon: 37.4
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 region map (no published coordinates).
+    lander: precision_100m
   - id: artemis_nobile_rim_2
     name: Nobile Rim 2
     group: artemis_region
@@ -66,6 +73,7 @@ sites:
     lon: 58.9
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 map. arXiv 2406.19863 puts its best site at -84.20156, 60.69989 (~9 km away, inside the box).
+    lander: precision_100m
   - id: artemis_de_gerlache_rim_2
     name: de Gerlache Rim 2
     group: artemis_region
@@ -73,6 +81,7 @@ sites:
     lon: -64.3
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 map. arXiv 2406.19863 ranks a site at 88 deg 30'56"S, 61 deg 10'W (~8 km away, inside the box).
+    lander: precision_100m
   - id: artemis_slater_plain
     name: Slater Plain
     group: artemis_region
@@ -80,6 +89,7 @@ sites:
     lon: 125.4
     source_url: https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/
     note: Approximate region centre measured from NASA's Oct 2024 region map (no published coordinates).
+    lander: precision_100m
 
   # --- CLPS ---
   - id: im2_target
@@ -89,6 +99,7 @@ sites:
     lon: 29.13
     source_url: https://lroc.im-ldi.com/images/1401
     note: Intended landing site on Mons Mouton as published by LROC (two decimals).
+    lander: nova_c
   - id: im2_actual
     name: IM-2 Athena (resting spot)
     group: clps
@@ -98,6 +109,7 @@ sites:
     note: On its side in a ~20 m crater, located by LROC. Landing time from the IM-2 Wikipedia infobox (body text says 17:27).
     landing_utc: "2025-03-06T17:28:50Z"
     target: {lat: -84.78, lon: 29.13}
+    lander: nova_c
   - id: im1_odysseus
     name: IM-1 Odysseus
     group: clps
@@ -106,6 +118,7 @@ sites:
     source_url: https://lroc.im-ldi.com/images/1360
     note: Near Malapert A, about 1.5 km from its target; elevation 2579 m (LROC). Touchdown time from LROC. Target coordinates not published.
     landing_utc: "2024-02-22T23:23:53Z"
+    lander: nova_c
   - id: blue_ghost_1
     name: Blue Ghost Mission 1
     group: clps
@@ -114,6 +127,7 @@ sites:
     source_url: https://www.lroc.im-ldi.com/images/1400
     note: Mare Crisium near Mons Latreille. LROC gives this as the landing region centre before landing; Wikipedia (citing NSSDC) gives the same values. Landing time from Wikipedia. Outside the south polar DEM.
     landing_utc: "2025-03-02T08:34:00Z"
+    lander: blue_ghost
   - id: blue_moon_mk1_target
     name: Blue Moon MK1 (Shackleton connecting ridge)
     group: clps
@@ -121,6 +135,7 @@ sites:
     lon: -150.05233
     source_url: https://www.hou.usra.edu/meetings/lpsc2024/pdf/1695.pdf
     note: Approximate. The MK1 target coordinates are not published; NASA says only "Shackleton Connecting Ridge" (https://www.nasa.gov/event/clps-flight-blue-origins-blue-moon-mark-1/). Uses the Connecting Ridge candidate site of Gracy & Lee (LPSC 2024), printed as 89.53432 S, 209.94767 E.
+    lander: blue_moon_mk1
 
   # --- International ---
   - id: chandrayaan_3
@@ -131,6 +146,7 @@ sites:
     source_url: https://en.wikipedia.org/wiki/Statio_Shiv_Shakti
     note: Wikipedia cites ISRO's mission page for the coordinates. Landing at 18:04 IST (12:34 UTC) per the Chandrayaan-3 article body; its infobox says 12:33. Outside the south polar DEM (80-90 S).
     landing_utc: "2023-08-23T12:34:00Z"
+    lander: vikram
   - id: change_7_target
     name: Chang'e-7 target (Shackleton rim)
     group: international
@@ -138,6 +154,7 @@ sites:
     lon: 123.4
     source_url: https://en.wikipedia.org/wiki/Chang%27e_7
     note: Approximate. "Peak near the southeast ridge of Shackleton crater"; Wikipedia cites a Weibo post, and The Planetary Society says no final site has been announced. Used as the Shackleton-rim validation site.
+    lander: precision_100m
 
   # --- Apollo (equator reference) ---
   - id: apollo_11
@@ -147,3 +164,4 @@ sites:
     lon: 23.47314
     source_url: https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html
     note: Lunar Module position from LRO images (Wagner et al. 2017), Mean Earth/Polar Axis frame (DE421). Equator reference; outside the south polar DEM.
+    lander: precision_100m

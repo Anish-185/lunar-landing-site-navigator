@@ -2,7 +2,7 @@
 
 Kept up to date with the code (CLAUDE.md rule 7). Each section gives what we compute, which library or NASA product does it, and what it does not model.
 
-Status: Phase 2 (site catalog, ephemeris, validation). Sections marked *planned* describe the intended method; they are rewritten when the code lands.
+Status: Phase 3 (terrain horizons, occluders, landing ellipses, PSRs, AVGVISIB validation). Sections marked *planned* describe the intended method; they are rewritten when the code lands.
 
 ## Conventions
 
@@ -52,9 +52,54 @@ Lander presets (`pipeline/landers.yaml`): every number has a source entry, eithe
 
 **Sanity checks** (tests, no terrain): at 88.8°S the Sun stays within ±2.75° of the horizon (colatitude 1.2° + the Moon's 1.54° axial tilt), and within ±2.0° at the 89.5°S connecting ridge. Earth there moves between −7.6° and +5.8° with libration and is above the horizon 44% of 2027. At Apollo 11, Earth never drops below 58°, in the western sky (azimuth ≈ 270°).
 
-## Terrain horizon (*planned*, Phase 3)
+## Terrain horizon (Phase 3)
 
-360° horizon (720 azimuths) from the vendored NASA MMGIS Sightline scripts, which handle lunar curvature, polar-stereographic grid convergence and observer height. Near field 0–5 km from the LOLA 20 m DEM, far field 5–200 km from the 80 m DEM. For each azimuth we keep the distance and location of the highest point (the occluder) so dark periods can be attributed to named terrain.
+**Code.** NASA-AMMOS MMGIS `HorizonProfile.py`, vendored in `vendor/mmgis_sightline/` (Apache-2.0; changes listed in each file's header). For each of 720 azimuths (0.5° apart) it marches outward from the observer over the DEM. The step is 1 pixel near the observer and grows logarithmically with distance. Each sample's height is lowered by the curvature drop d²/2R (R = 1737.4 km), and the march direction is corrected for grid convergence of the polar stereographic map. It keeps the highest elevation angle per azimuth, and we also keep that sample's pixel: the occluder.
+
+**Two fields per site.** Near field 0–5 km from a cached ~11 km window of the 20 m LOLA DEM; far field 5–200 km from the 80 m DEM. The horizon is the higher of the two per azimuth, with the winner's distance, x/y and lat/lon. Both fields use the same eye height (the 20 m surface + mast): MMGIS adds the observer height to its own DEM's surface, so the far-field call gets mast + z(20 m) − z(80 m). Masts 1, 2, 5, 10, 15 and 20 m. Output: `data/derived/horizons/<site_id>.npz`. 17 sites × 6 masts take 26 s.
+
+**Outside the polar DEMs.** Chandrayaan-3 (69°S) uses a 205 km window of PGDA's 240 m DEM of 60–90°S, read remotely once and cached (`horizon_source = ldem_60s_240m`, single field 0–200 km). Blue Ghost 1 and Apollo 11 have no DEM here: their horizon is the smooth-sphere dip −acos(R/(R+h)) (`horizon_source = smooth_sphere`), and the UI must say so.
+
+**Blame the ridge.** Each occluder point is named from the USGS Gazetteer of Planetary Nomenclature: approved craters (including lettered satellite craters such as Cabeus B) and montes, each as a circle of its published diameter. If the point lies inside one or more circles, the smallest wins; otherwise the closest feature within 1.5 radii. The relation is "inside" (< 0.8 R), "rim" (0.8–1.2 R), "near" (≤ 1.5 R), or "on" for a mons. `navigator.geo.blame_line` turns it into e.g. "Sun blocked by the rim of Shackleton, 21 km away at az 212°". Circles are a rough footprint: an occluder on a crater wall can be labelled "inside", and terrain between named features stays unnamed.
+
+## Landing ellipse (Phase 3)
+
+For each polar site, 200 points drawn from a 2-D Gaussian (σ = the site's default lander `ellipse_sigma_m` on each axis, seed 0) in the polar stereographic plane. Each point gets its own full near + far horizon at 2 m (lander deck height, our assumption), with occluder names. It also gets slope from the 20 m LDSM, height error from the 20 m error map, and distance to the nearest PSR. Output: `data/derived/tiles/<site_id>.npz`. The 14 sites take ~28 min on 12 cores, under the 30 min budget, so no far-field shortcut is used.
+
+## Permanently shadowed regions (Phase 3)
+
+Distances are measured in the polar stereographic plane from each site and ellipse point to the nearest PSR > 1 km² in PGDA's `LPSR_80S_20MPP_ADJ_1km2` shapefile (GeoPandas `sjoin_nearest`; 0 inside one). Results are in `data/derived/site_psr.csv` and the tiles. PSRs are identified by their catalog IDs (e.g. `HNP_860121_3378628`). The app draws `data/derived/psr_outlines.geojson`: the same polygons simplified with a 40 m tolerance, in polar stereographic metres (not lon/lat), 2.3 MB. GeoPandas and Shapely run only in the pipeline.
+
+## Shadow snapshot (Phase 3, used in Phase 5)
+
+`shadow_snapshot(site, utc)` runs MMGIS `sightmap.py` (Numba, needs real GDAL, so pipeline only) over a 600 m square at 20 m. Shadows from terrain within 5 km come from the 20 m window. Farther terrain comes from the site's far-field horizon: if the Sun is below it, the whole square is in shadow. Results are cached in `data/derived/shadow/`. At IM-2 Athena's touchdown (2025-03-06 17:28:50 UTC) the Sun was 2.5° up at az 66°, and the whole 600 m square is lit at 20 m resolution. Athena came to rest in a ~20 m crater, smaller than one DEM pixel, so this model cannot show that shadow.
+
+## Validation against NASA's illumination maps (Phase 3)
+
+PGDA product 69's AVGVISIB maps give, per pixel, the fraction of hourly timesteps over 18.6 years (one nutation cycle) in which **any part** of the solar (or Earth) disc is visible (PDS label). Neither the label nor the product page gives the exact window, so we use the 18.6 years ending at the product date: 1998-01-01 to 2016-08-01, 6-hourly (27,148 epochs). We compare at each polar site with our 1 m horizon. "Disc" = disc centre elevation + angular radius above the horizon (like for like); "point" = disc centre only. The 85°S map (60 m) is used for sites south of 85°S, the 75°S map (120 m) otherwise. Results: `data/derived/validation_avgvisib.csv`.
+
+| Site | NASA Sun | Ours (disc) | Δ | NASA Earth | Ours (disc) | Δ |
+| --- | --- | --- | --- | --- | --- | --- |
+| Haworth | 26.8% | 27.3% | +0.5 | 47.2% | 47.2% | 0.0 |
+| Malapert Massif | 31.6% | 30.9% | −0.7 | 19.2% | 11.3% | −7.9 |
+| Mons Mouton Plateau | 31.6% | 30.5% | −1.1 | 75.1% | 74.8% | −0.3 |
+| Mons Mouton | 6.4% | 6.8% | +0.4 | 34.3% | 30.1% | −4.2 |
+| Nobile Rim 1 | 35.1% | 32.4% | −2.7 | 45.9% | 45.9% | 0.0 |
+| Nobile Rim 2 | 41.2% | 40.3% | −0.8 | 70.0% | 70.1% | +0.1 |
+| de Gerlache Rim 2 | 37.7% | 38.3% | +0.6 | 55.3% | 55.5% | +0.1 |
+| Slater Plain | 1.9% | 2.3% | +0.5 | 40.9% | 41.2% | +0.4 |
+| IM-2 target | 46.5% | 46.5% | 0.0 | 93.1% | 93.6% | +0.5 |
+| IM-2 resting spot | 46.8% | 46.9% | +0.1 | 93.1% | 93.6% | +0.5 |
+| IM-1 Odysseus | 35.6% | 36.4% | +0.8 | 100% | 100% | 0.0 |
+| Chang'e-7 target | 50.0% | 49.8% | −0.2 | 58.7% | 60.7% | +1.9 |
+| **Peak near Cabeus B** | 19.7% | 9.6% | **−10.1** | 7.8% | 0.0% | −7.8 |
+| **Blue Moon MK1 (ridge)** | 44.0% | 57.6% | **+13.7** | 51.5% | 53.0% | +1.6 |
+
+12 of 14 sites agree within 2.7 points for the Sun and 7.9 points for Earth; most within 1 point. Treating the Sun as a point instead of a disc lowers our Sun fraction by 1–6 points and Earth by up to 12. Two sites differ by more than 10 points, and both are explained by terrain, not errors:
+
+- **Peak near Cabeus B: DEM resolution.** With our near field on the 80 m DEM instead of 20 m, our Sun fraction rises from 9.6% to 16.8%, toward NASA's 19.7% (120 m DEM): nearby terrain resolved only at 20 m blocks the Sun. NASA's own map varies from 13% to 31% within 840 m of the site.
+- **Blue Moon MK1 (connecting ridge): position on a narrow ridge.** NASA's map ranges from 0% to 59.5% within 420 m of the site (crest vs flanks), and our 57.6% is inside that range. Changing the near-field resolution does not move it (57.4%).
+- Malapert's Earth difference (−7.9 points) is the same kind: NASA's values range from 0% to 27% within 420 m.
 
 ## Visibility, events, comms, power, landing (*planned*, Phases 5–7)
 
@@ -63,7 +108,9 @@ To be written with the code.
 ## Known limits
 
 - Azimuth "local north" is undefined exactly at a pole; behaviour for sites within a few metres of ±90° latitude has not been checked yet.
-- Terrain comes from LOLA DEMs (20 m / 80 m, plus 5 m shape-from-shading tiles where available). Features smaller than a few DEM pixels (boulders, small craters) are not in the horizon.
+- Terrain comes from LOLA DEMs (20 m near field, 80 m far field; 240 m for Chandrayaan-3). Features smaller than a few DEM pixels (boulders, small craters such as the ~20 m crater Athena landed in) are not in the horizons or shadow snapshots. At sites with steep nearby terrain, long-run sunlight can differ from NASA's 60–120 m maps by 10 points or more (see the validation above).
+- Blue Ghost 1 and Apollo 11 have no terrain horizon (smooth sphere only); Chandrayaan-3 uses 240 m terrain.
+- Occluder names come from circular feature footprints (centre + diameter); complex rims and terrain between named features may be labelled loosely or left unnamed.
 - **Custom sites use coarser terrain (160 m) than catalog sites (20 m near field + 80 m far field).** Ridges and crater rims narrower than a few hundred metres are smoothed out, so near-field horizons at custom sites are lower and less detailed; the UI labels them "coarser terrain (160 m) than catalog sites". The 1 m height rounding is negligible next to that (at 1 km it changes the horizon by under 0.03°).
 - Terrain coverage ends at 80°S (the edge of the PGDA 90 mosaics). Horizons for sites near that edge miss terrain beyond it.
 - Artemis region coordinates are centres measured from NASA's map (a few km uncertainty), and the Blue Moon MK1 and Chang'e-7 targets are unofficial; lander presets are illustrative unless a source is cited.

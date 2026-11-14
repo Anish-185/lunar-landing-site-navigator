@@ -10,6 +10,9 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | LOLA south polar DEM and slope 20 m (`LDEM_80S_20MPP_ADJ.TIF`, `LDSM_80S_20MPP_ADJ.TIF`); PGDA product 90 | as above | NASA public data | Near-field horizons and landing-zone slope; read remotely in windows (`/vsicurl/`), not stored | https://pgda.gsfc.nasa.gov/products/90 |
 | LOLA average Sun and Earth visibility maps (`AVGVISIB_85S_060M_201608[_EARTH].TIF`, `AVGVISIB_75S_120M_201608[_EARTH].TIF`); PGDA product 69 | NASA GSFC. Cite: Mazarico et al. (2011), Icarus 211, 1066–1081, doi:10.1016/j.icarus.2010.10.030 | NASA public data | Map layer; validation of our long-run sunlit and Earth-visible fractions | https://pgda.gsfc.nasa.gov/products/69 |
 | NAIF SPICE generic kernels: `naif0012.tls`, `pck00011.tpc`, `de440s.bsp`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf` | NASA JPL NAIF | NASA public data | Sun/Earth ephemeris (DE440), lunar orientation and the `MOON_ME` frame | https://naif.jpl.nasa.gov/pub/naif/generic_kernels/ |
+| LOLA DEM 240 m, 60°S–90°S (`LDEM_60S_240MPP_ADJ.TIF`); PGDA product 90 | as above | NASA public data | Terrain horizon for Chandrayaan-3 (one 205 km window read remotely and cached, not stored) | https://pgda.gsfc.nasa.gov/products/90 |
+| USGS Gazetteer of Planetary Nomenclature, Moon feature centre points (`MOON_nomenclature_center_pts.zip`) | USGS Astrogeology / IAU WGPSN | Public domain (U.S. Government) | Names, centres and diameters of craters and montes for naming the terrain that blocks the Sun or Earth; reduced to `data/derived/lunar_features.csv` | https://planetarynames.wr.usgs.gov/ |
+| AVGVISIB PDS labels and illumination README (LOLA PDS node) | NASA GSFC / MIT | NASA public data | Definition of the AVGVISIB values (any part of the disc visible) for our validation | http://imbrium.mit.edu/EXTRAS/ILLUMINATION/ |
 | JPL Horizons (apparent Sun and Earth AZ/EL for observers on the Moon) | NASA JPL Solar System Dynamics | NASA public service | Validation reference for our ephemeris; responses cached in `tests/fixtures/horizons.csv` | https://ssd.jpl.nasa.gov/horizons/ |
 
 ## Site catalog sources (`pipeline/sites.yaml`, `pipeline/landers.yaml`)
@@ -78,13 +81,14 @@ Pulled in by the pipeline packages above (mostly GDAL, GeoPandas, Shapely) and i
 
 | Code | Source | License | Our changes |
 |---|---|---|---|
-| *(added in Phase 3)* | | | |
+| `vendor/mmgis_sightline/HorizonProfile.py`, `visibility.py`, `sightmap.py` | NASA-AMMOS MMGIS, https://github.com/NASA-AMMOS/MMGIS (plugins/core/backend/Sightline/scripts, commit c54c70f9) | Apache-2.0, Copyright 2020 California Institute of Technology (LICENSE and NOTICE kept) | Guarded GDAL import with a rasterio/pyproj fallback; MOON_ME frame and LT+S aberration; importable wrappers; HorizonProfile also returns the highest point's pixel, x/y and lat/lon. Each change is marked `[Lunar Navigator]` |
 
 ## Ideas and inspiration (no code copied)
 
 | Project | Link | What inspired us |
 |---|---|---|
-| *(added when a feature draws on it)* | | |
+| Iftee07/lunar-mission-planner | https://github.com/Iftee07/lunar-mission-planner | "Move a little" ring of nearby points around a target; we sample a lander-specific Gaussian landing ellipse instead |
+| MdAhbab/PolarWindow | https://github.com/MdAhbab/PolarWindow | Scoring landing dispersion (share of ellipse points that pass); we score every criterion per point |
 
 ## Research and mission references
 

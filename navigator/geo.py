@@ -147,3 +147,62 @@ gdal_compat = SimpleNamespace(Open=_Dataset, UseExceptions=lambda: None, GA_Read
 osr_compat = SimpleNamespace(SpatialReference=_SpatialReference, CoordinateTransformation=_CoordinateTransformation,
                              OAMS_TRADITIONAL_GIS_ORDER=0)
 GDAL_COMPAT_VERSION = "3.compat"  # HorizonProfile.py only checks the major version
+
+
+# --- naming the terrain that blocks the Sun or Earth ("blame the ridge") ---
+
+MOON_RADIUS_M = 1737400.0
+LOCAL_SLOPE_M = 500.0  # occluders closer than this are "the local slope"
+
+
+def great_circle_m(lat1, lon1, lat2, lon2):
+    """Distance on the 1737.4 km sphere (haversine), broadcasting over arrays."""
+    p1, p2, dl = np.radians(lat1), np.radians(lat2), np.radians(np.asarray(lon2) - np.asarray(lon1))
+    a = np.sin((p2 - p1) / 2) ** 2 + np.cos(p1) * np.cos(p2) * np.sin(dl / 2) ** 2
+    return 2 * MOON_RADIUS_M * np.arcsin(np.sqrt(np.clip(a, 0, 1)))
+
+
+def name_points(lat, lon, features) -> tuple[np.ndarray, np.ndarray]:
+    """For each point, the named feature it belongs to and how ("rim", "inside", "on", "near"), or "" if none.
+
+    `features`: table with name, lat, lon, diameter_km, kind ("crater" | "mons"), e.g. data/derived/lunar_features.csv.
+    A feature's footprint is a circle of its diameter. Among features whose footprint contains the point, the
+    smallest wins (most specific); otherwise, among features within 1.5 radii, the one whose rim is closest (km).
+    """
+    lat, lon = np.atleast_1d(lat).astype(float), np.atleast_1d(lon).astype(float)
+    flat, flon = np.asarray(features["lat"], float), np.asarray(features["lon"], float)
+    radius = np.asarray(features["diameter_km"], float) * 500.0
+    # Pre-filter (same result, much faster): drop features whose 1.5-radius circle cannot reach the points' latitudes.
+    reach = np.degrees(1.5 * radius / MOON_RADIUS_M)
+    if np.isfinite(lat).any():
+        keep = (flat - reach <= np.nanmax(lat)) & (flat + reach >= np.nanmin(lat))
+        if not keep.any():
+            empty = np.full(len(lat), "", dtype=object).astype(str)
+            return empty, empty
+        features = {k: np.asarray(features[k])[keep] for k in ("name", "kind")}
+        flat, flon, radius = flat[keep], flon[keep], radius[keep]
+    d = great_circle_m(lat[:, None], lon[:, None], flat[None, :], flon[None, :]) / radius[None, :]
+    big = np.broadcast_to(radius, d.shape)
+    inside_pick = np.where(d <= 1.0, big, np.inf).argmin(axis=1)
+    near_pick = np.where(d <= 1.5, (d - 1.0) * big, np.inf).argmin(axis=1)  # closest rim, in metres
+    has_inside = (d <= 1.0).any(axis=1)
+    pick = np.where(has_inside, inside_pick, near_pick)
+    ratio = d[np.arange(len(lat)), pick]
+    found = ratio <= 1.5
+    kinds = np.asarray(features["kind"])[pick]
+    relation = np.where(kinds == "mons", np.where(ratio <= 1.0, "on", "near"),
+                        np.where(ratio < 0.8, "inside", np.where(ratio <= 1.2, "rim", "near")))
+    names = np.where(found & np.isfinite(lat), np.asarray(features["name"])[pick], "")
+    return names.astype(str), np.where(names != "", relation, "").astype(str)
+
+
+def blame_line(body: str, name: str, relation: str, distance_m: float, azimuth_deg: float) -> str:
+    """'Sun blocked by the rim of Shackleton, 21 km away at az 212°' (plain English for the UI).
+    Occluders closer than LOCAL_SLOPE_M are the ground around the site itself, not a distant ridge."""
+    where = {"rim": f"the rim of {name}", "inside": f"terrain inside {name}", "on": name,
+             "near": f"terrain near {name}"}.get(relation, "unnamed terrain")
+    if distance_m < LOCAL_SLOPE_M:
+        where = "the local slope"
+    km = distance_m / 1000.0
+    dist = f"{km:.0f} km" if km >= 2 else f"{distance_m:.0f} m"
+    return f"{body} blocked by {where}, {dist} away at az {azimuth_deg:.0f}°"

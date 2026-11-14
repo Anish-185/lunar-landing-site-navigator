@@ -31,10 +31,15 @@ PGDA90_FILES = ["LDEM_80S_80MPP_ADJ.TIF", "LDSM_80S_80MPP_ADJ.TIF", "LDEM_80S_80
 # The _COG.TIF links on the product page are dead (the server answers 200 with a "Not Found" page),
 # so we use the plain GeoTIFFs.
 PGDA69_FILES = [f"AVGVISIB_{grid}_201608{body}.TIF" for grid in ("85S_060M", "75S_120M") for body in ("", "_EARTH")]
+# USGS Gazetteer of Planetary Nomenclature (public domain): names, centres and diameters of lunar features.
+USGS_GAZETTEER = "https://planetarynames.wr.usgs.gov/shapefiles/MOON_nomenclature_center_pts.zip"
 REMOTE_20M = {
     "ldem_20m": f"{PGDA90}/LDEM_80S_20MPP_ADJ.TIF",
     "ldsm_20m": f"{PGDA90}/LDSM_80S_20MPP_ADJ.TIF",
+    "lderr_20m": f"{PGDA90}/LDEM_80S_20MPP_ADJ_ERR.TIF",
 }
+# Chandrayaan-3 (69 S) is outside the 80-90 S mosaics: read a window of the 60-90 S 240 m DEM instead.
+REMOTE_60S_240M = f"{PGDA90}/LDEM_60S_240MPP_ADJ.TIF"
 
 
 def latest_moon_fk() -> str:
@@ -124,6 +129,7 @@ def main() -> None:
     jobs = [(f"{NAIF}/{k}", KERNEL_DIR / Path(k).name) for k in kernels]
     jobs += [(f"{PGDA90}/{name}", RAW / "pgda90" / name) for name in PGDA90_FILES]
     jobs += [(f"{PGDA69}/{name}", RAW / "pgda69" / name) for name in PGDA69_FILES]
+    jobs.append((USGS_GAZETTEER, RAW / "usgs" / Path(USGS_GAZETTEER).name))
     # Slow links: fetch what later steps need first (DEM, small files), the big slope/error grids last.
     jobs.sort(key=lambda job: job[1].name in ("LDSM_80S_80MPP_ADJ.TIF", "LDEM_80S_80MPP_ADJ_ERR.TIF"))
     with ThreadPoolExecutor(max_workers=2) as pool:
