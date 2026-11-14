@@ -2,7 +2,7 @@
 
 NASA Space Apps 2026. A planning tool that shows when a lunar landing site has sunlight and a line of sight to Earth, explains why (which ridge blocks the Sun), and re-plans when a launch slips.
 
-**Status:** Phase 0, repository scaffold. No features yet. The method and its limits are in [`docs/METHOD.md`](docs/METHOD.md).
+**Status:** Phase 1, NASA data download and terrain helpers. No app features yet. The method and its limits are in [`docs/METHOD.md`](docs/METHOD.md).
 
 ## Setup
 

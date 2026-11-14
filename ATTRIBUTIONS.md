@@ -6,7 +6,10 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 
 | Resource | Provider | License | Use | Link |
 |---|---|---|---|---|
-| *(added in Phase 1 with the downloads)* | | | | |
+| LOLA south polar DEM 80 m (`LDEM_80S_80MPP_ADJ.TIF`), slope (`LDSM_80S_80MPP_ADJ.TIF`), height error (`LDEM_80S_80MPP_ADJ_ERR.TIF`), PSRs > 1 km² (`LPSR_80S_20MPP_ADJ_1km2` shapefile); PGDA product 90 | NASA GSFC / LOLA team. Cite: Barker et al. (2023), Planet. Sci. J. 4, 183, doi:10.3847/PSJ/acf3e1; data doi:10.60903/gsfcpgda-lola-spole | NASA public data | Far-field horizons, slope, height uncertainty, PSR distance; source of `data/derived/dem_80s_160m.tif` (2×2 block average, int16) | https://pgda.gsfc.nasa.gov/products/90 |
+| LOLA south polar DEM and slope 20 m (`LDEM_80S_20MPP_ADJ.TIF`, `LDSM_80S_20MPP_ADJ.TIF`); PGDA product 90 | as above | NASA public data | Near-field horizons and landing-zone slope; read remotely in windows (`/vsicurl/`), not stored | https://pgda.gsfc.nasa.gov/products/90 |
+| LOLA average Sun and Earth visibility maps (`AVGVISIB_85S_060M_201608[_EARTH].TIF`, `AVGVISIB_75S_120M_201608[_EARTH].TIF`); PGDA product 69 | NASA GSFC. Cite: Mazarico et al. (2011), Icarus 211, 1066–1081, doi:10.1016/j.icarus.2010.10.030 | NASA public data | Map layer; validation of our long-run sunlit and Earth-visible fractions | https://pgda.gsfc.nasa.gov/products/69 |
+| NAIF SPICE generic kernels: `naif0012.tls`, `pck00011.tpc`, `de440s.bsp`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf` | NASA JPL NAIF | NASA public data | Sun/Earth ephemeris (DE440), lunar orientation and the `MOON_ME` frame | https://naif.jpl.nasa.gov/pub/naif/generic_kernels/ |
 
 ## Open-source libraries
 

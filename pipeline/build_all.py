@@ -1,9 +1,15 @@
-"""Phase 4. Run ephemeris, horizons and tiles for every catalog site in parallel (joblib).
+"""Build everything in data/derived/ from data/raw/ (`make derived`).
+
+Phase 1: the 160 m DEM for custom sites. Phase 4 adds ephemeris, horizons and tiles for every
+catalog site in parallel (joblib).
 """
+
+from pipeline import horizon
 
 
 def main() -> None:
-    raise NotImplementedError("Phase 4: not written yet")
+    dem = horizon.build_coarse_dem()
+    print(f"{dem.relative_to(horizon.ROOT)}: {dem.stat().st_size / 1e6:.1f} MB")
 
 
 if __name__ == "__main__":
