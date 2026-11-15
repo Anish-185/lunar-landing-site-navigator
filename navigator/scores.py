@@ -56,8 +56,13 @@ def summary(site: engine.Site, tl: pd.DataFrame) -> dict:
     reasons.append(f"Sunlit {pct['sunlit']:.0f}% of the mission.")
     if night_why:
         reasons.append(night_why)
-    reasons.append(f"Direct-to-Earth link usable {pct['link']:.0f}% of the time "
-                   f"(Earth clear by ≥ 2° and a DSN dish in view).")
+    if tl.attrs.get("relay"):
+        direct = 100.0 * float(tl["direct_link"].mean())
+        reasons.append(f"Relay assumed (illustrative, always reachable): link usable {pct['link']:.0f}% of the time; "
+                       f"direct to Earth alone would give {direct:.0f}%.")
+    else:
+        reasons.append(f"Direct-to-Earth link usable {pct['link']:.0f}% of the time "
+                       f"(Earth clear by ≥ 2° and a DSN dish in view).")
     if black_why:
         reasons.append(black_why)
     low = float(((tl["band"] == "poor") & tl["earth_visible"]).mean() * 100)

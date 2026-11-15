@@ -2,6 +2,7 @@
 
 import json
 import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -31,7 +32,8 @@ def _thermal():
         t = z["tmax"]
         n = t.shape[0] // 2 * 2
         blocks = t[:n, :n].reshape(n // 2, 2, n // 2, 2)  # 1 km -> 2 km for a lighter chart
-        with np.errstate(all="ignore"):
+        with warnings.catch_warnings():  # all-NaN blocks outside the mesh are expected
+            warnings.simplefilter("ignore", RuntimeWarning)
             tmax = np.nanmean(blocks, axis=(1, 3))
         return {"x": z["x"][:n].reshape(-1, 2).mean(1), "y": z["y"][:n].reshape(-1, 2).mean(1), "tmax": tmax}
 

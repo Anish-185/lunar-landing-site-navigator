@@ -11,7 +11,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ui  # noqa: E402
 
-PAGES = Path(__file__).resolve().parent / "pages"
+PAGES = Path(__file__).resolve().parent / "views"  # not "pages": Streamlit would auto-register those and bypass this router on deep links
 
 ui.setup()
 nav = st.navigation([

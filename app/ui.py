@@ -36,7 +36,7 @@ def css() -> None:
 
 def setup(title: str = "Site") -> None:
     st.set_page_config(page_title=f"{title} | {NAME}", page_icon=":material/wb_twilight:",
-                       layout="wide", initial_sidebar_state="expanded")
+                       layout="wide", initial_sidebar_state="auto")  # collapsed on phones
     css()
 
 
@@ -78,6 +78,7 @@ def _load_query_params() -> None:
     ss.setdefault("heading", num("heading", landing.DEFAULT_HEADING, 0.0, 359.0))
     ss.setdefault("lander", qp.get("lander") if qp.get("lander") in engine.landers() else "")
     ss.setdefault("mode", "Expert" if qp.get("mode") == "expert" else "Simple")
+    ss.setdefault("relay", qp.get("relay") == "1")
     ss["_qp_loaded"] = True
 
 
@@ -124,13 +125,18 @@ def sidebar() -> dict:
                      help="Illustrative numbers unless landers.yaml cites a source.")
         st.number_input("Approach heading (°)", 0.0, 359.0, step=5.0, key="heading",
                         help="Direction of travel on final descent. Default 180° = along the meridian, toward the pole.")
+        st.toggle("Assume a relay orbiter", key="relay",
+                  help="Illustrative: a relay that is always reachable, so the link no longer needs Earth in view. "
+                       "NASA's Artemis III requirements assume no relay.")
         st.segmented_control("View", ["Simple", "Expert"], key="mode")
     start = pd.Timestamp(dt.datetime.combine(ss["date"], ss["time"]), tz="UTC")
     sc = {"site_id": site.id, "site": site, "start": start, "days": int(ss["days"]), "mast": float(ss["mast"]),
           "lander_key": ss["lander"], "lander": engine.landers()[ss["lander"]], "heading": float(ss["heading"]),
-          "expert": ss.get("mode") == "Expert"}
+          "expert": ss.get("mode") == "Expert", "relay": bool(ss.get("relay"))}
     qp = {"site": sid, "t": start.strftime("%Y-%m-%dT%H:%MZ"), "days": str(sc["days"]), "mast": f"{sc['mast']:g}",
           "lander": sc["lander_key"], "heading": f"{sc['heading']:g}", "mode": "expert" if sc["expert"] else "simple"}
+    if sc["relay"]:
+        qp["relay"] = "1"
     if sid == CUSTOM:
         qp.update(lat=f"{ss['lat']:.4f}", lon=f"{ss['lon']:.4f}")
     st.query_params.from_dict(qp)
@@ -166,15 +172,16 @@ def _site(sid: str, lat: float, lon: float) -> engine.Site:
 
 
 @st.cache_data(show_spinner="Running the mission hour by hour...", max_entries=64)
-def run(site_id: str, lat: float, lon: float, start: pd.Timestamp, days: int, mast: float, lander_key: str):
+def run(site_id: str, lat: float, lon: float, start: pd.Timestamp, days: int, mast: float, lander_key: str,
+        relay: bool = False):
     site = _site(CUSTOM if site_id.startswith("custom_") else site_id, lat, lon)
-    tl = engine.timeline(site, start, days, mast, engine.landers()[lander_key])
+    tl = engine.timeline(site, start, days, mast, engine.landers()[lander_key], relay=relay)
     return tl, scores.summary(site, tl), scores.countdowns(site, tl)
 
 
 def run_sc(sc: dict):
     s = sc["site"]
-    return run(s.id, s.lat, s.lon, sc["start"], sc["days"], sc["mast"], sc["lander_key"])
+    return run(s.id, s.lat, s.lon, sc["start"], sc["days"], sc["mast"], sc["lander_key"], sc["relay"])
 
 
 # --- HTML pieces ---
@@ -216,12 +223,12 @@ def site_header(sc: dict) -> None:
 
 
 @st.cache_data(show_spinner="Flying 200 landings across the ellipse...", max_entries=32)
-def odds(site_id: str, start: pd.Timestamp, days: int, lander_key: str):
+def odds(site_id: str, start: pd.Timestamp, days: int, lander_key: str, relay: bool = False):
     site = engine.load_site(site_id)
     tile = engine.load_tile(site_id)
     if tile is None:
         return None
-    tl = engine.timeline(site, start, days, 2.0, engine.landers()[lander_key])
+    tl = engine.timeline(site, start, days, 2.0, engine.landers()[lander_key], relay=relay)
     return landing.ellipse_odds(tile, tl, engine.landers()[lander_key])
 
 

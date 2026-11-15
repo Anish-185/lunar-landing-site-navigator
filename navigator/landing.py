@@ -74,6 +74,8 @@ def ellipse_odds(tile: dict, tl: pd.DataFrame, lander: dict, max_slope: float = 
     pw = power.array_power(tl["sun_el"].to_numpy()[None, :], eff, lander["array_W"], lander["panel"])
     bat = power.battery(tl["utc"], pw, lander["load_W"], lander["battery_Wh"])
     link = comms.link_usable(comms.band(out["earth_clear"], thresholds), tl["dsn"].to_numpy()[None, :])
+    if tl.attrs.get("relay"):
+        link = np.ones_like(link, dtype=bool)
     pts = pd.DataFrame({
         "x": tile["x"], "y": tile["y"], "lat": tile["lat"], "lon": tile["lon"], "slope_deg": tile["slope_deg"],
         "psr_dist_m": tile["psr_dist_m"],

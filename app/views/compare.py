@@ -43,7 +43,7 @@ for i, c in enumerate(cols):
 rows = []
 for n, sid, start in picks:
     s = engine.load_site(sid)
-    _, summ, _ = ui.run(sid, s.lat, s.lon, start, sc["days"], sc["mast"], sc["lander_key"])
+    _, summ, _ = ui.run(sid, s.lat, s.lon, start, sc["days"], sc["mast"], sc["lander_key"], sc["relay"])
     rows.append({"label": f"{n}. {s.name}, {start:%-d %b %Y}", **summ})  # numbered: the same site may repeat
 if not rows:
     st.info("Tick at least one scenario to compare.", icon=":material/info:")

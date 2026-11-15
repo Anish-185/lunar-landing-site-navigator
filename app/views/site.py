@@ -28,7 +28,7 @@ if not site.has_terrain:
 
 # --- the three verdicts ---
 power_reasons = [r for r in summ["reasons"] if r.startswith(("Sunlit", "Longest night", "Battery", "Earth eclipses"))]
-comms_reasons = [r for r in summ["reasons"] if r.startswith(("Direct-to-Earth", "Longest comms", "Earth skims"))]
+comms_reasons = [r for r in summ["reasons"] if r.startswith(("Direct-to-Earth", "Relay assumed", "Longest comms", "Earth skims"))]
 c1, c2, c3 = st.columns(3)
 c1.markdown(ui.card("Power", "sun", plots.SUN, verdict["power"], f"{summ['pct_sunlit']:.0f}", "% of the mission sunlit",
                     power_reasons), unsafe_allow_html=True)
@@ -120,7 +120,7 @@ if len(dark):
             st.switch_page(Path(__file__).with_name("map.py"))
 
 # --- landing zone ---
-o = None if site.custom else ui.odds(site.id, sc["start"], sc["days"], sc["lander_key"])
+o = None if site.custom else ui.odds(site.id, sc["start"], sc["days"], sc["lander_key"], sc["relay"])
 rel = None if site.custom else ui.relief(site.id)
 if o is not None and rel is not None:
     st.markdown("### Landing-zone odds")

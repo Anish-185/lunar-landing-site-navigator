@@ -15,11 +15,11 @@ NASA Space Apps 2026. At the Moon's south pole the Sun never climbs: it circles 
 | **Site** | Power, Comms and Landing-light verdicts (icon + word + colour, with reasons); countdowns to the next sunset, sunrise, Earthset and Earthrise with an uncertainty window from LOLA's height error; a 360° sky panorama with the real terrain skyline and the Sun and Earth paths (press Play); an hour-by-hour timeline of clearance, link quality and battery; **blame the ridge** (click any dark stretch: "Sun blocked by Mons Malapert, 111 km away at az 94°", then show it on the map); **landing-zone odds** over 200 simulated landings, each with its own horizon and slope; mast-height curve; science vs engineering trade-off (distance to permanent shadow vs light); a one-page decision brief (HTML, print to PDF) and the hourly CSV. |
 | **Compare** | Up to four site + date scenarios side by side, best value per row highlighted; "Equator vs pole" preset and a short explainer. |
 | **Slip Replanner** | Launch date + cruise + slip → every candidate site × landing day re-ranked; Plan B cards (another site, same site later, best overall) with "what changed". |
-| **Map** | NASA's long-run sunlight and Earth-visibility maps, permanently shadowed regions, every catalog site (click to plan it), and the ridge you picked. |
+| **Map** | NASA's long-run sunlight and Earth-visibility maps and Diviner's measured maximum temperature (cold traps < 110 K), over a LOLA hillshade, with permanently shadowed regions, every catalog site (click to plan it), and the ridge you picked. |
 | **Athena replay** | IM-2's landing on 6 Mar 2025, step by step, including what 20 m orbital terrain cannot see (the 20 m crater Athena ended up in). |
 | **Evidence** | Ephemeris vs JPL Horizons, our long-run sunlight vs NASA's maps, and a hindcast of four landers that flew. |
 
-Custom latitude/longitude sites (80–90°S) work too, on the shipped 160 m DEM (labelled as coarser). The app makes no network calls.
+Custom latitude/longitude sites (80–90°S) work too, on the shipped 160 m DEM (labelled as coarser). A sidebar toggle assumes a relay orbiter (illustrative upper bound; Artemis III assumes none). Every catalog polar site also gets a measured thermal line from LRO Diviner. The app makes no network calls.
 
 ## Validation
 
@@ -39,6 +39,7 @@ Needs conda (Miniforge recommended).
 make env                 # conda env "lunar-nav" (Python 3.11, GDAL from conda-forge)
 conda activate lunar-nav
 make data                # download NASA data into data/raw/ (~1 GB; 20 m DEMs are read remotely in windows)
+                         # (the Diviner thermal table, 0.6 GB, is fetched by the thermal step of make derived)
 make derived             # incremental precompute into data/derived/ (FORCE=1 rebuilds; first full run ~30 min)
 make test                # pytest (network tests skipped; run them with pytest -m network)
 make app                 # streamlit run app/Home.py

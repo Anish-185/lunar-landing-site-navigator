@@ -291,3 +291,13 @@ def test_hillshade_is_bounded_and_flat_is_uniform():
     assert np.allclose(flat, np.sin(np.radians(30)))
     ramp = plots.hillshade(np.tile(np.arange(10.0) * 5, (10, 1)), 20.0)
     assert (0 <= ramp).all() and (ramp <= 1).all()
+
+
+def test_relay_toggle_only_changes_the_link():
+    site = engine.load_site("change_7_target")
+    a = engine.timeline(site, "2027-01-01T00:00Z", 7, 2.0)
+    b = engine.timeline(site, "2027-01-01T00:00Z", 7, 2.0, relay=True)
+    assert b["link"].all() and (b["direct_link"] == a["link"]).all()
+    assert (a["soc"] == b["soc"]).all()
+    sb = scores.summary(site, b)
+    assert sb["pct_link"] == 100 and any(r.startswith("Relay assumed") for r in sb["reasons"])

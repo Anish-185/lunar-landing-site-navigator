@@ -73,7 +73,7 @@ from streamlit.testing.v1 import AppTest
 root = Path({str(ROOT)!r})
 for p in sorted((root / "navigator").glob("*.py")):
     importlib.import_module("navigator." + p.stem)
-for page in [root / "app" / "Home.py", *sorted((root / "app" / "pages").glob("*.py"))]:
+for page in [root / "app" / "Home.py", *sorted((root / "app" / "views").glob("*.py"))]:
     at = AppTest.from_file(str(page), default_timeout=60).run()
     assert not at.exception, (page.name, [e.message for e in at.exception])
 print(sorted({{m.split(".")[0] for m in sys.modules}} & set({sorted(NEVER_IN_APP)!r})))

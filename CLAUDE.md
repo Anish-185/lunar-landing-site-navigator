@@ -31,7 +31,7 @@ Goal: the **least custom code possible**. We stitch together open-source librari
 ```
 pipeline/    offline only: fetch_data.py, ephem.py, horizon.py, sites.py, sites.yaml, landers.yaml, build_all.py
 navigator/   pure, tested logic: geo, engine, visibility, eclipse, events, comms, power, scores, landing, replan, plots
-app/         Streamlit UI only: Home.py + pages/
+app/         Streamlit UI only: Home.py (router) + views/ (pages) + ui.py, style.css, static/
 vendor/      third-party code, unmodified except where its header says
 data/raw/    downloads (gitignored)
 data/derived/ committed outputs; every file < 50 MB (enforced by tests/test_repo.py)

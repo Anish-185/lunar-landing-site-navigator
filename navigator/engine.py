@@ -212,9 +212,12 @@ def dsn_any(times) -> np.ndarray:
 
 
 def timeline(site: Site, start, days: float, mast_m: float = 2.0, lander: dict | None = None,
-             thresholds: dict | None = None, eph: pd.DataFrame | None = None) -> pd.DataFrame:
+             thresholds: dict | None = None, eph: pd.DataFrame | None = None, relay: bool = False) -> pd.DataFrame:
     """Everything per hour for one scenario: Sun/Earth clearance, visible disc fractions, eclipse, effective sun,
-    comm band, DSN, link, array power and battery state of charge."""
+    comm band, DSN, link, array power and battery state of charge.
+
+    relay=True assumes a relay orbiter that is always reachable (illustrative upper bound: no orbit is modelled),
+    so the link no longer needs Earth in view. NASA's Artemis III requirements assume no relay."""
     from navigator import comms, eclipse, power, visibility
 
     start = pd.Timestamp(start)
@@ -236,11 +239,15 @@ def timeline(site: Site, start, days: float, mast_m: float = 2.0, lander: dict |
     df["band"] = comms.band(df["earth_clear"], thresholds)
     df["dsn"] = dsn_any(df["utc"])
     df["link"] = comms.link_usable(df["band"], df["dsn"])
+    df["direct_link"] = df["link"]
+    if relay:
+        df["link"] = True
     df["both"] = df["sunlit"] & df["link"]
     df["power_W"] = power.array_power(df["sun_el"], df["eff_sun"], lander["array_W"], lander["panel"])
     bat = power.battery(df["utc"], df["power_W"], lander["load_W"], lander["battery_Wh"])
     df["soc"] = bat["soc"]
-    df.attrs.update({"site_id": site.id, "mast_m": mast_m, "lander": lander, "start": start, "days": days})
+    df.attrs.update({"site_id": site.id, "mast_m": mast_m, "lander": lander, "start": start, "days": days,
+                     "relay": relay})
     return df
 
 
