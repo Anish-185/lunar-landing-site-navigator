@@ -378,3 +378,41 @@ def validate_avgvisib(n_jobs: int = -1) -> pd.DataFrame:
     df = pd.DataFrame(rows)
     df.to_csv(AVGVISIB_CSV, index=False, float_format="%.4f")
     return df
+
+
+AVGVISIB_RANGE_CSV = DERIVED / "validation_avgvisib_range.csv"
+NEIGHBOURHOOD_M = 420.0
+
+
+def avgvisib_neighbourhood(radius_m: float = NEIGHBOURHOOD_M) -> pd.DataFrame:
+    """NASA's own AVGVISIB min and max within `radius_m` of each polar site (same map as the validation), and
+    whether our value falls inside that range: on steep terrain a few hundred metres change long-run sunlight a lot,
+    so a point-to-point gap with NASA is only meaningful against NASA's local spread."""
+    val = pd.read_csv(AVGVISIB_CSV)
+    rows = []
+    for s in load_sites():
+        if not s["in_polar_dem"]:
+            continue
+        v = val.loc[val["site_id"] == s["id"]].iloc[0]
+        row = {"site_id": s["id"], "radius_m": radius_m}
+        for body, suffix in (("sun", ""), ("earth", "_EARTH")):
+            path = AVGVISIB_DIR / f"{v['nasa_map']}{suffix}.TIF"
+            with rasterio.open(path) as ds:
+                x, y = geo.latlon_to_xy(s["lat"], s["lon"], path)
+                r, c = ds.index(x, y)
+                k = int(np.ceil(radius_m / abs(ds.transform.a))) + 1
+                win = rasterio.windows.Window(c - k, r - k, 2 * k + 1, 2 * k + 1)
+                a = ds.read(1, window=win).astype(float)
+                if ds.nodata is not None:
+                    a[a == ds.nodata] = np.nan
+                xs, ys = rasterio.transform.xy(ds.window_transform(win), *np.indices(a.shape), offset="center")
+            inside = (np.hypot(np.asarray(xs) - x, np.asarray(ys) - y) <= radius_m).reshape(a.shape)
+            vals = a[inside] * AVGVISIB_SCALE
+            ours = float(v[f"our_{body}_disc"])
+            row.update({f"nasa_{body}": float(v[f"nasa_{body}"]), f"our_{body}": ours,
+                        f"nasa_{body}_min": float(np.nanmin(vals)), f"nasa_{body}_max": float(np.nanmax(vals)),
+                        f"{body}_in_range": bool(np.nanmin(vals) - 1e-9 <= ours <= np.nanmax(vals) + 1e-9)})
+        rows.append(row)
+    df = pd.DataFrame(rows)
+    df.to_csv(AVGVISIB_RANGE_CSV, index=False, float_format="%.4f")
+    return df

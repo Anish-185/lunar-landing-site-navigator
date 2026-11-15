@@ -2,7 +2,7 @@
 
 Kept up to date with the code (CLAUDE.md rule 7). Each section gives what we compute, which library or NASA product does it, and what it does not model.
 
-Status: Phase 3 (terrain horizons, occluders, landing ellipses, PSRs, AVGVISIB validation). Sections marked *planned* describe the intended method; they are rewritten when the code lands.
+Status: Phase 4 (incremental build on top of Phase 3's terrain horizons, occluders, landing ellipses, PSRs and AVGVISIB validation). Sections marked *planned* describe the intended method; they are rewritten when the code lands.
 
 ## Conventions
 
@@ -99,7 +99,13 @@ PGDA product 69's AVGVISIB maps give, per pixel, the fraction of hourly timestep
 
 - **Peak near Cabeus B: DEM resolution.** With our near field on the 80 m DEM instead of 20 m, our Sun fraction rises from 9.6% to 16.8%, toward NASA's 19.7% (120 m DEM): nearby terrain resolved only at 20 m blocks the Sun. NASA's own map varies from 13% to 31% within 840 m of the site.
 - **Blue Moon MK1 (connecting ridge): position on a narrow ridge.** NASA's map ranges from 0% to 59.5% within 420 m of the site (crest vs flanks), and our 57.6% is inside that range. Changing the near-field resolution does not move it (57.4%).
-- Malapert's Earth difference (−7.9 points) is the same kind: NASA's values range from 0% to 27% within 420 m.
+- Malapert's Earth difference (−7.9 points) is the same kind: NASA's values range from 0% to 43% within 420 m.
+
+**NASA's own spread within 420 m.** A single-pixel comparison hides how fast long-run sunlight changes on steep terrain, so `horizon.avgvisib_neighbourhood` also reads NASA's minimum and maximum within 420 m of each site (same map) and checks whether our value falls inside: `data/derived/validation_avgvisib_range.csv`. **Sun: ours is inside NASA's own 420 m range at 13 of 14 sites**, including Blue Moon MK1 (NASA 0%–59.5%, ours 57.6%) and Malapert (24.7%–44.4%, ours 30.9%). The exception is Peak near Cabeus B (NASA 13.3%–30.8%, ours 9.6%), explained above by our 20 m near field resolving terrain the 120 m map smooths out. **Earth: inside at 12 of 14**; the two outside miss by under half a point (IM-2 target: ours 93.6%, NASA max 93.1%; Chang'e-7: 60.66% vs 60.64%).
+
+## Build (Phase 4)
+
+`make derived` runs `pipeline/build_all.py`, which is incremental. Each step declares its inputs: the source code of the functions it runs (via `inspect.getsource`, so editing an unrelated function in the same module does not trigger it), the config files (`sites.yaml`, `landers.yaml`) and the data files it reads. A step is skipped when that fingerprint matches its last successful run (stored in `data/derived/.build_state.json`, gitignored) and its outputs exist. Files under 64 MB are fingerprinted by SHA-256 of their content, bigger ones (raw DEMs) by size + mtime. `make derived FORCE=1` rebuilds everything; `python -m pipeline.build_all --list` shows which steps are dirty, `--only STEP` runs one step. A no-change run takes ~1 s; the 28-minute ellipse step reruns only when its code, the site/lander config, the 20 m windows, the 80 m DEM, the PSR shapefile or the feature names change. `tests/test_derived_outputs.py` smoke-checks every committed output.
 
 ## Visibility, events, comms, power, landing (*planned*, Phases 5–7)
 

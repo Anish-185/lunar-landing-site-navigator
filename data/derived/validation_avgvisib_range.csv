@@ -1,0 +1,15 @@
+site_id,radius_m,nasa_sun,our_sun,nasa_sun_min,nasa_sun_max,sun_in_range,nasa_earth,our_earth,nasa_earth_min,nasa_earth_max,earth_in_range
+artemis_peak_near_cabeus_b,420.0000,0.1970,0.0961,0.1333,0.3079,False,0.0784,0.0000,0.0000,0.3052,True
+artemis_haworth,420.0000,0.2678,0.2731,0.1004,0.3410,True,0.4720,0.4721,0.4387,0.5152,True
+artemis_malapert_massif,420.0000,0.3160,0.3090,0.2472,0.4436,True,0.1919,0.1132,0.0000,0.4331,True
+artemis_mons_mouton_plateau,420.0000,0.3162,0.3050,0.2514,0.3766,True,0.7506,0.7478,0.6852,0.8744,True
+artemis_mons_mouton,420.0000,0.0636,0.0680,0.0000,0.4778,True,0.3429,0.3013,0.2502,0.7854,True
+artemis_nobile_rim_1,420.0000,0.3512,0.3241,0.2337,0.4425,True,0.4587,0.4586,0.2773,0.5346,True
+artemis_nobile_rim_2,420.0000,0.4116,0.4033,0.3330,0.4280,True,0.7001,0.7009,0.6584,0.7100,True
+artemis_de_gerlache_rim_2,420.0000,0.3766,0.3829,0.3292,0.3858,True,0.5532,0.5546,0.4976,0.5571,True
+artemis_slater_plain,420.0000,0.0187,0.0234,0.0000,0.0756,True,0.4086,0.4124,0.3134,0.4153,True
+im2_target,420.0000,0.4646,0.4650,0.4344,0.4700,True,0.9311,0.9358,0.8414,0.9314,False
+im2_actual,420.0000,0.4684,0.4689,0.3896,0.4743,True,0.9307,0.9358,0.6842,0.9370,True
+im1_odysseus,420.0000,0.3557,0.3636,0.2688,0.4380,True,1.0000,1.0000,0.7344,1.0000,True
+blue_moon_mk1_target,420.0000,0.4396,0.5763,0.0000,0.5953,True,0.5146,0.5302,0.0000,0.5545,True
+change_7_target,420.0000,0.4999,0.4977,0.1702,0.8596,True,0.5872,0.6066,0.0016,0.6064,False

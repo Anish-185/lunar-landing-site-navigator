@@ -23,3 +23,4 @@ dist/
 
 # Planning docs (competitive analysis): local only, keep out of the public repo
 docs/plan/
+data/derived/.build_state.json
