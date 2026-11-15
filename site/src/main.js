@@ -50,12 +50,23 @@ function beats(section, p) {
 }
 
 // --- 1-2: the cosmos (three.js, loaded after first paint) ---
+// The download happens at idle; the Big Bang itself waits for the reader's first move ("Scroll to start the
+// universe"), so the first paint never waits for WebGL.
 let cosmos = null;
-const startCosmos = () => import("./cosmos.js").then(({ createCosmos }) => {
-  cosmos = createCosmos($("#cosmos"), { reduced, base: BASE });
-  toCosmos();
-});
-if ("requestIdleCallback" in window) requestIdleCallback(startCosmos, { timeout: 600 }); else setTimeout(startCosmos, 200);
+const cosmosModule = new Promise((res) => (window.requestIdleCallback || setTimeout)(() => res(import("./cosmos.js")), { timeout: 1500 }));
+let started = false;
+const startCosmos = () => {
+  if (started) return;
+  started = true;
+  ["wheel", "touchstart", "keydown", "pointerdown", "scroll"].forEach((ev) => removeEventListener(ev, startCosmos));
+  cosmosModule.then(({ createCosmos }) => {
+    cosmos = createCosmos($("#cosmos"), { reduced, base: BASE });
+    $(".singularity")?.classList.add("gone");
+    toCosmos();
+  });
+};
+["wheel", "touchstart", "keydown", "pointerdown", "scroll"].forEach((ev) => addEventListener(ev, startCosmos, { passive: true }));
+if (scrollY > 0) startCosmos();
 
 const origin = $("#origin"), pole = $("#pole");
 // Two chapters drive one scene: keep both progresses and hand the cosmos their sum, so neither callback overrides

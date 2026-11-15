@@ -98,7 +98,7 @@ def _tile_landers() -> str:
 def steps() -> list[Step]:
     # Imported here so `--help` and the state helpers work without the pipeline's heavy dependencies.
     from navigator import engine, geo
-    from pipeline import ephem, export_site, horizon, layers, media, sites
+    from pipeline import ephem, export_site, horizon, layers, media, sites, thermal
     from vendor.mmgis_sightline import HorizonProfile
 
     cfg = ["pipeline/sites.yaml"]  # landers.yaml feeds only the tile step, through _tile_landers
@@ -149,6 +149,9 @@ def steps() -> list[Step]:
              ["data/raw/pgda69/AVGVISIB_75S_120M_201608*.TIF"], ["data/derived/map_avgvisib.npz"]),
         Step("tile_relief", layers.build_tile_relief, [layers.build_tile_relief, *site_code],
              ["pipeline/sites.yaml", "data/raw/windows/*_ldem_20m.tif"], ["data/derived/relief/*.npz"]),
+        Step("thermal", thermal.build_thermal, [thermal, *site_code],
+             ["pipeline/sites.yaml", "data/raw/diviner/dlre_prp_south.tab"],
+             ["data/derived/thermal_south.npz", "data/derived/site_thermal.csv"]),
         Step("shadow_snapshots", export_site.build_shadow_snapshots,
              [export_site.build_shadow_snapshots, horizon.shadow_snapshot, *site_code],
              ["pipeline/sites.yaml", "data/raw/windows/*_ldem_20m.tif", "data/derived/horizons/*.npz"],

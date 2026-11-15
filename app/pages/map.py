@@ -22,6 +22,20 @@ def _layer():
         return {k: z[k] for k in z.files}
 
 
+@st.cache_data(show_spinner=False)
+def _thermal():
+    p = engine.DERIVED / "thermal_south.npz"
+    if not p.exists():
+        return None
+    with np.load(p) as z:
+        t = z["tmax"]
+        n = t.shape[0] // 2 * 2
+        blocks = t[:n, :n].reshape(n // 2, 2, n // 2, 2)  # 1 km -> 2 km for a lighter chart
+        with np.errstate(all="ignore"):
+            tmax = np.nanmean(blocks, axis=(1, 3))
+        return {"x": z["x"][:n].reshape(-1, 2).mean(1), "y": z["y"][:n].reshape(-1, 2).mean(1), "tmax": tmax}
+
+
 @st.cache_resource(show_spinner=False)
 def _psr():
     return plots.psr_traces(json.loads((engine.DERIVED / "psr_outlines.geojson").read_text()))
@@ -44,14 +58,19 @@ sites = _sites(str(layer["crs"]))
 st.markdown("# Map")
 st.markdown("<p class='g-lede'>NASA's own long-run maps (LOLA, 18.6 years of sunlight and Earth visibility, PGDA "
             "product 69), averaged to 2.5 km. Click a site to plan it.</p>", unsafe_allow_html=True)
-body = st.segmented_control("Layer", ["Sunlight", "Earth visibility"], default="Sunlight", key="map_layer")
+thermal = _thermal()
+choices = ["Sunlight", "Earth visibility"] + (["Max temperature"] if thermal is not None else [])
+body = st.segmented_control("Layer", choices, default="Sunlight", key="map_layer") or "Sunlight"
 marker = st.session_state.get("occluder_marker")
-fig = plots.map_figure(layer, "earth" if body == "Earth visibility" else "sun", sites, _psr(), sc["site_id"],
-                       marker)
+key = {"Sunlight": "sun", "Earth visibility": "earth", "Max temperature": "tmax"}[body]
+fig = plots.map_figure(thermal if key == "tmax" else layer, key, sites, _psr(), sc["site_id"], marker,
+                       basemap="app/static/pole_hillshade.webp")
 event = st.plotly_chart(fig, config=plots.CONFIG, key="map", on_select="rerun", selection_mode="points")
-st.caption("Polar stereographic view centred on the south pole (km). Brighter means more of the time with the Sun "
-           "(gold) or Earth (blue) in view. Purple outlines are permanently shadowed regions larger than 3 km². "
-           "Diamonds are catalog sites; a red cross marks a ridge picked on the Site page.")
+st.caption("Polar stereographic view centred on the south pole (km), over a LOLA hillshade. Sunlight / Earth: brighter "
+           "means more of the time with the Sun (gold) or Earth (blue) in view (NASA PGDA 69). Max temperature: the "
+           "annual maximum measured by LRO Diviner (Paige et al. 2010); icy blue below 110 K marks cold traps where water "
+           "ice can survive at the surface. Purple outlines are permanently shadowed regions larger than 3 km². Diamonds "
+           "are catalog sites; a red cross marks a ridge picked on the Site page.")
 pts = (event or {}).get("selection", {}).get("points", []) if isinstance(event, dict) or hasattr(event, "get") else []
 picked = [p.get("customdata") for p in pts if p.get("customdata")]
 if picked and picked[0] != sc["site_id"]:

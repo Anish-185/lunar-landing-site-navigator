@@ -18,7 +18,7 @@ NAME, SUBTITLE = "Gnomon", "Lunar Landing Site Navigator"
 GROUPS = {"artemis_region": "Artemis III region", "clps": "CLPS lander", "international": "International",
           "apollo": "Apollo"}
 CUSTOM = "custom"
-DEFAULT_START = "2027-01-12T12:00:00Z"
+DEFAULT_START = "2027-01-18T12:00:00Z"
 DEFAULT_SITE = "artemis_nobile_rim_2"
 STATUS = {"good": ("Go", "circle-check"), "caution": ("Caution", "triangle-alert"), "bad": ("No-go", "octagon-x")}
 
@@ -270,4 +270,5 @@ def dark_periods(tl: pd.DataFrame) -> pd.DataFrame:
         for _, r in w.iterrows():
             out.append({"body": body, "what": word, "start": r["start"], "end": r["end"], "hours": max(r["duration_h"], 1)})
     df = pd.DataFrame(out)
-    return df.sort_values("hours", ascending=False).reset_index(drop=True) if len(df) else df
+    # nights first (that is where a ridge gets the blame), then blackouts; longest first within each
+    return df.sort_values(["body", "hours"], ascending=[False, False]).reset_index(drop=True) if len(df) else df

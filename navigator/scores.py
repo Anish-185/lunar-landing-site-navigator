@@ -125,3 +125,19 @@ def first_sunset(site: engine.Site, landing_utc, days: float = 20.0, mast_m: flo
     t0 = t0.tz_localize("UTC") if t0.tzinfo is None else t0.tz_convert("UTC")
     tl = engine.timeline(site, t0.floor("1h"), days, mast_m)
     return events.next_event(tl["utc"], tl["sun_clear"] + tl["sun_r"], t0, "set")
+
+
+COLD_TRAP_K = 110.0  # annual maximum below this: water ice stable at the surface (Paige et al. 2010)
+
+
+def thermal_reason(row: dict | None) -> str | None:
+    """'Thermal' line from Diviner's polar resource product (measured, within 500 m of the site)."""
+    if row is None or not np.isfinite(row.get("tmax_k", np.nan)):
+        return None
+    line = (f"Thermal (Diviner, measured): annual max {row['tmax_k']:.0f} K, average {row['tavg_k']:.0f} K within 500 m.")
+    share = row.get("cold_trap_share", 0) or 0
+    if row["tmax_k"] < COLD_TRAP_K:
+        line += " Cold trap: water ice could survive at the surface."
+    elif share > 0:
+        line += f" {share:.0%} of the ground within 500 m is a cold trap (max < 110 K)."
+    return line

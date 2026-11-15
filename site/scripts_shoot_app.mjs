@@ -2,10 +2,12 @@
 import { chromium } from "playwright";
 const base = process.argv[2] || "http://localhost:8599";
 const out = process.argv[3] || "shots";
-const pages = (process.argv[4] || "site,compare,map,evidence").split(",");
+const pages = (process.argv[4] || "site,compare,replan,map,athena,evidence").split(",");
+const only = process.argv[5];
 const widths = { desktop: [1440, 900], mobile: [390, 844] };
 const browser = await chromium.launch({ executablePath: "/usr/bin/chromium" });
 for (const [label, [w, h]] of Object.entries(widths)) {
+  if (only && only !== label) continue;
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
   const page = await ctx.newPage();
   for (const p of pages) {

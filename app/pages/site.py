@@ -37,6 +37,9 @@ c2.markdown(ui.card("Comms", "satellite-dish", plots.EARTH, verdict["comms"], f"
 c3.markdown(ui.card("Landing light", "plane-landing", plots.TERRAIN, light["rating"], f"{light['sun_el']:.1f}°",
                     "Sun elevation at touchdown", light["reasons"]), unsafe_allow_html=True)
 
+thermal = scores.thermal_reason(engine.site_thermal(site.id))
+if thermal:
+    st.caption(thermal + " Source: LRO Diviner polar resource product (Paige et al. 2010).")
 chips = [ui.countdown_chip(cd, "sunset", "sunset", plots.SUN, "Next sunset"),
          ui.countdown_chip(cd, "sunrise", "sunrise", plots.SUN, "Next sunrise"),
          ui.countdown_chip(cd, "earthset", "earth", plots.EARTH, "Next Earthset"),

@@ -2,7 +2,7 @@
 
 Kept up to date with the code (CLAUDE.md rule 7). Each section gives what we compute, which library or NASA product does it, and what it does not model.
 
-Status: Phase 7 (differentiators: Slip Replanner, blame the ridge, landing-zone odds panel, mast curve, science vs engineering, Athena replay) on the Phase 6 app. Sections marked *planned* describe the intended method; they are rewritten when the code lands.
+Status: Phase 8 (story site, decision brief, educator extras, deployment) on the Phase 3–7 pipeline, engine and app. Sections marked *planned* describe the intended method; they are rewritten when the code lands.
 
 ## Conventions
 
@@ -139,6 +139,14 @@ Design: one stylesheet (`app/style.css`), `.streamlit/config.toml` theme, shared
 - **Athena replay** (page). Touchdown 2025-03-06 17:28:50 UTC at LROC's resting spot (84.7906°S, 29.1957°E). AP reported Athena about 250 m from its target; LROC's positions (target given to two decimals) differ by 369 m. Sun 2.5° up at az 66°: a 1 m boulder casts a 23 m shadow; 0% of the landing zone is in terrain shadow at 20 m, and the MMGIS sightmap snapshot of the 600 m square is fully lit. Intuitive Machines attributed the navigation error to long shadows and dim polar lighting. A 10-day mission at the 200 points around the target passes all four tests at 100% (upright lander, illustrative Nova-C preset). LROC found Athena on its side in a 20 m crater: one pixel of the 20 m DEM. With an illustrative depth of 0.1–0.2 × diameter, at 2.5° the rim casts a 46–93 m shadow, so the crater floor was dark.
 - **PGDA product 104 (5 m shape-from-shading DEMs, Bertone et al.) does not cover Athena.** The archive (Zenodo 10.5281/zenodo.17954508, CC BY 4.0) covers the 13 Artemis III regions of 2022; the nearest, Leibnitz Beta Plateau, spans 85.06–85.79°S, and Athena is at 84.79°S, ~30 km outside it. We checked the region bounds in the archive README before downloading anything. No public DEM we know of resolves Athena's crater, and the story says so.
 
+## Story site and polish (Phase 8)
+
+- **Story site** (`site/`, Vite, static, deployed to GitHub Pages by `.github/workflows/pages.yml`). Every chart and number comes from `site/public/data/story.json`, written by `pipeline/export_site.py` (a `make derived` step) from the same engine: the de Gerlache Rim 2 skyline and the Sun's January 2027 path with its blocking ridges, Earth's libration there, NASA's AVGVISIB cells within 900 m of the Blue Moon MK1 target, the Athena replay numbers, a slip grid (13 sites × 121 days, 7-day stay) and the validation numbers. three.js draws the Big Bang particles and the Moon and Earth (NASA SVS CGI Moon Kit, Blue Marble); it is downloaded at idle and starts on the reader's first scroll, renders only while animating or scrolling. Lenis smooths scrolling, Motion's `scroll()` drives pinned chapters and parallax, Plotly.js draws the charts and loads only when a chart is near. `prefers-reduced-motion` gets a static page with every beat visible. Lighthouse (desktop, local build): performance 100, accessibility 100, best practices 100, SEO 92. The Mission Console embeds the Streamlit app from `site/public/config.json` (`appUrl`), with a placeholder until it is set.
+- **Decision brief**: one HTML page (plain f-string template, `navigator/brief.py`) with the scenario, the three verdicts and their reasons, landing-zone odds, Plan B within ±30 days, assumptions and sources; the timeline chart is embedded as Plotly HTML (loads plotly.js from its CDN when opened). Print to PDF from the browser. The hourly CSV is always available.
+- **Educator extras**: "Equator vs pole" preset on Compare (Apollo 11 vs the Shackleton rim, same dates) and a short "Why is the pole so strange?" explainer.
+- **Accessibility**: every status has an icon and a word as well as a colour; every chart has a caption describing what it shows; keyboard-reachable selection for blame the ridge.
+- **Deployment**: `requirements.txt` only at the root; tested in a fresh Python 3.11 venv from a clean clone: all seven pages render under Streamlit's AppTest, no GDAL/GeoPandas/Shapely/Numba/joblib is imported, no network call at startup, every committed file < 50 MB.
+
 ## Known limits
 
 - Azimuth "local north" is undefined exactly at a pole; behaviour for sites within a few metres of ±90° latitude has not been checked yet.
@@ -150,6 +158,7 @@ Design: one stylesheet (`app/style.css`), `.streamlit/config.toml` theme, shared
 - Artemis region coordinates are centres measured from NASA's map (a few km uncertainty), and the Blue Moon MK1 and Chang'e-7 targets are unofficial; lander presets are illustrative unless a source is cited.
 - Elevations are above the smooth 1737.4 km sphere: no terrain yet (Phase 3), no refraction (there is no atmosphere). The observer is at height 0 unless a mast height is given.
 - Orbital terrain misses small craters: Athena's 20 m crater is one pixel of the 20 m LOLA DEM, and PGDA's 5 m SfS DEMs do not cover its site. Landing-light shadow fractions and ellipse odds see only terrain larger than ~40 m.
+- Default lander numbers are illustrative: with the generic precision preset (50 kWh, 1000 W) most 7-day polar missions that include a night longer than ~40 h fail the battery test. That is a statement about the preset, not the site.
 - Comm-quality thresholds are assumptions (user-editable), not a link budget: no antenna patterns, no fading statistics, no data rates.
 - Hourly sampling: events are interpolated between samples (minutes of error); a Sun or Earth glimpse shorter than an hour can be missed.
 - Ellipse points use the site's Sun/Earth directions and the 20 m slope (a 20 m baseline, not NASA's 100 m), and a 2 m deck height.

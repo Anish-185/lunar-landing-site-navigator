@@ -180,16 +180,30 @@ def psr_traces(geojson: dict, min_area_km2: float = 3.0, crs_scale: float = 1.0)
 
 
 def map_figure(layer: dict, body: str, sites: pd.DataFrame, psr: go.Scatter | None, selected: str | None = None,
-               marker_xy: tuple | None = None, height: int = 680) -> go.Figure:
-    """NASA's long-run visibility (PGDA 69) in polar stereographic km, PSR outlines, and the catalog sites."""
+               marker_xy: tuple | None = None, height: int = 680, basemap: str | None = None) -> go.Figure:
+    """NASA's long-run visibility (PGDA 69) or Diviner's annual maximum temperature, in polar stereographic km,
+    over an optional LOLA hillshade basemap, with PSR outlines and the catalog sites."""
     if body == "sun":  # dark -> ember -> gold -> pale gold: long-run sunlight is mostly 0-50 %, so spend contrast there
         scale = [[0, "#05071A"], [0.12, "#2A1F48"], [0.3, "#6E3F4E"], [0.5, "#C2793A"], [0.75, SUN], [1, "#FFF1C9"]]
-    else:
+        zmin, zmax, unit, src = 0, 100, "% of time", "NASA"
+    elif body == "earth":
         scale = [[0, "#05071A"], [0.2, "#14234F"], [0.5, "#2F64B5"], [0.8, EARTH], [1, "#E3F0FF"]]
-    fig = go.Figure(go.Heatmap(x=layer["x"] / 1000, y=layer["y"] / 1000, z=layer[body], colorscale=scale, zmin=0,
-                               zmax=100, colorbar=dict(title=dict(text="% of time", side="right"), thickness=10,
-                                                       tickfont=dict(color=INK_DIM)),
-                               hovertemplate="x %{x:.0f} km, y %{y:.0f} km<br>%{z} % of time<extra>NASA</extra>"))
+        zmin, zmax, unit, src = 0, 100, "% of time", "NASA"
+    else:  # Diviner annual maximum temperature: cold traps (< 110 K) in icy blue, the rest warming to ember
+        scale = [[0, "#BFE3FF"], [0.18, "#4D8FD6"], [0.2, "#2A2F5C"], [0.55, "#6E3F4E"], [1, "#F08A4B"]]
+        zmin, zmax, unit, src = 40, 340, "K (annual max)", "Diviner"
+    z = layer[body]
+    fig = go.Figure(go.Heatmap(x=layer["x"] / 1000, y=layer["y"] / 1000, z=z, colorscale=scale, zmin=zmin, zmax=zmax,
+                               opacity=0.78 if basemap else 1.0,
+                               colorbar=dict(title=dict(text=unit, side="right"), thickness=10, tickfont=dict(color=INK_DIM)),
+                               hovertemplate="x %{x:.0f} km, y %{y:.0f} km<br>%{z:.0f} " + unit + f"<extra>{src}</extra>"))
+    if body == "tmax":
+        fig.add_trace(go.Contour(x=layer["x"] / 1000, y=layer["y"] / 1000, z=z, showscale=False, hoverinfo="skip",
+                                 contours=dict(start=110, end=110, size=1, coloring="none"),
+                                 line=dict(color="#BFE3FF", width=1), name="Cold trap edge (110 K)"))
+    if basemap:
+        fig.add_layout_image(dict(source=basemap, xref="x", yref="y", x=-304, y=304, sizex=608, sizey=608,
+                                  sizing="stretch", layer="below", opacity=1.0))
     if psr is not None:
         fig.add_trace(psr)
     sel = sites["id"] == selected if selected else np.zeros(len(sites), bool)
@@ -325,7 +339,7 @@ def replan_heatmap(df: pd.DataFrame, landing, original_site: str, height: int = 
                                colorbar=dict(title=dict(text="Sun + link %", side="right"), thickness=10),
                                hovertemplate="%{y}<br>land %{x|%-d %b %Y}<br>Sun + link %{z:.0f} %<extra></extra>"))
     fig.add_trace(go.Scatter(x=fail["date"], y=fail["name"], mode="markers", name="Battery fails",
-                             marker=dict(symbol="x-thin", size=6, color=ALARM, line=dict(width=1.5, color=ALARM)),
+                             marker=dict(symbol="circle", size=3, color=ALARM, opacity=0.6),
                              hovertemplate="%{y}, %{x|%-d %b}: battery fails<extra></extra>"))
     fig.add_vline(x=pd.Timestamp(landing), line=dict(color=INK, width=1.5, dash="dot"))
     fig.add_annotation(x=pd.Timestamp(landing), y=1.02, yref="paper", text="slipped landing", showarrow=False,

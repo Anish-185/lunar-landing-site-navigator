@@ -242,3 +242,17 @@ def timeline(site: Site, start, days: float, mast_m: float = 2.0, lander: dict |
     df["soc"] = bat["soc"]
     df.attrs.update({"site_id": site.id, "mast_m": mast_m, "lander": lander, "start": start, "days": days})
     return df
+
+
+@lru_cache(maxsize=1)
+def _thermal_table() -> pd.DataFrame | None:
+    path = DERIVED / "site_thermal.csv"
+    return pd.read_csv(path).set_index("site_id") if path.exists() else None
+
+
+def site_thermal(site_id: str) -> dict | None:
+    """Diviner annual max/average temperature and ice depth around a catalog site (Phase 9), or None."""
+    t = _thermal_table()
+    if t is None or site_id not in t.index:
+        return None
+    return t.loc[site_id].to_dict()

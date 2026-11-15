@@ -93,6 +93,8 @@ def build() -> list[Path]:
     out.append(_write(_read_rgb(src["earth.png"], 2048), SITE_MEDIA / "earth.jpg", "JPEG", 80))
     hs = hillshade(ROOT / "data" / "derived" / "dem_80s_160m.tif")
     out.append(_write(hs, SITE_MEDIA / "pole_hillshade.webp", quality=70))
+    out.append(_write(hillshade(ROOT / "data" / "derived" / "dem_80s_160m.tif", width=900), APP_STATIC / "pole_hillshade.webp",
+                      quality=62))  # Map page basemap
     return out
 
 

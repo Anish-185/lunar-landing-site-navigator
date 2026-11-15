@@ -78,12 +78,13 @@ export function createCosmos(canvas, { reduced = false, base = "./" } = {}) {
   const start = performance.now();
   const BANG_MS = 2600;
 
+  let particlesDone = false;
   function frame(now) {
     if (!reduced && bang < 1) bang = Math.min(1, (now - start) / BANG_MS);
     const e = 1 - Math.pow(1 - bang, 4);          // ease-out: hot and fast, then coasting
     const cool = MathUtils.smoothstep(bang, 0.15, 1);
-    const drift = (now - start) * 0.00002;
-    for (let i = 0; i < N; i++) {
+    const drift = p * 0.6;                         // after the burst, everything moves with the reader's scroll
+    if (!particlesDone) for (let i = 0; i < N; i++) {
       const r = speed[i] * e;
       pos[i * 3] = dir[i * 3] * r;
       pos[i * 3 + 1] = dir[i * 3 + 1] * r;
@@ -93,8 +94,11 @@ export function createCosmos(canvas, { reduced = false, base = "./" } = {}) {
       col[i * 3 + 1] = starCol[i * 3 + 1] * cool + hot * 0.92;
       col[i * 3 + 2] = starCol[i * 3 + 2] * cool + hot * 0.85;
     }
-    geo.attributes.position.needsUpdate = true;
-    geo.attributes.color.needsUpdate = true;
+    if (!particlesDone) {
+      geo.attributes.position.needsUpdate = true;
+      geo.attributes.color.needsUpdate = true;
+      particlesDone = bang >= 1;
+    }
     mat.size = MathUtils.lerp(6, 1.25, cool);
     stars.rotation.y = drift + p * 0.25;
     stars.rotation.x = p * 0.08;
@@ -104,30 +108,45 @@ export function createCosmos(canvas, { reduced = false, base = "./" } = {}) {
     moonMat.opacity = show;
     earthMat.opacity = show * 0.95;
     const toPole = MathUtils.smoothstep(p, 1.0, 1.45);
-    moon.rotation.y = 2.4 + (now - start) * 0.00004 * (1 - toPole);
+    moon.rotation.y = 2.4 + p * 0.9 * (1 - toPole);
     moon.rotation.x = MathUtils.lerp(0.12, -Math.PI / 2 + 0.05, toPole);   // south pole turns toward us
     moon.position.x = MathUtils.lerp(small ? 0 : 7, 0, toPole);
     moon.position.y = MathUtils.lerp(small ? 3 : 0, 0, toPole);
     camera.position.z = MathUtils.lerp(30, 9.5, toPole);
-    earth.rotation.y += 0.0006;
+    earth.rotation.y = p * 1.2;
     earthMat.opacity = show * 0.95 * (1 - toPole);
     canvas.style.opacity = String(1 - MathUtils.smoothstep(p, 1.4, 1.62));
     renderer.render(scene, camera);
   }
 
-  function loop(now) {
-    if (visible) frame(now);
-    requestAnimationFrame(loop);
+  // Render on demand: every frame during the opening burst, then only when the scroll position changes
+  // (or textures arrive). An idle page costs nothing.
+  let dirty = true, queued = false;
+  const request = () => { dirty = true; if (!queued) { queued = true; requestAnimationFrame(tick); } };
+  function tick(now) {
+    queued = false;
+    if (!visible) return;
+    const animating = !reduced && bang < 1;
+    if (dirty || animating) { dirty = false; frame(now); }
+    if (animating) request();
   }
-  requestAnimationFrame(loop);
+  request();
+  loader.manager.onLoad = request;
 
   addEventListener("resize", () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight, false);
+    request();
   });
 
   return {
-    setProgress(v) { p = v; visible = v < 1.64; if (!visible) canvas.style.opacity = "0"; },
+    setProgress(v) {
+      if (v === p) return;
+      p = v;
+      visible = v < 1.64;
+      if (!visible) canvas.style.opacity = "0";
+      request();
+    },
   };
 }

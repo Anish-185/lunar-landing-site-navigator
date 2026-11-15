@@ -57,8 +57,8 @@ tx, ty = geo.latlon_to_xy(target.lat, target.lon, engine.COARSE_DEM)
 ax, ay = geo.latlon_to_xy(actual.lat, actual.lon, engine.COARSE_DEM)
 b.plotly_chart(plots.odds_scatter(rel, odds_a, [(tx, ty, "Target", plots.EARTH), (ax, ay, "Athena", plots.ALARM)],
                                   height=460), config=plots.CONFIG, key="ath_map")
-b.caption("20 m LOLA relief around the resting spot, with 200 simulated landings (σ = 50 m, illustrative) and the "
-          "published target (blue diamond, outside this 800 m view if not shown) and resting spot (red diamond).")
+b.caption("20 m LOLA relief around the resting spot, with 200 simulated landings (σ = 50 m, illustrative), the "
+          "published target (blue diamond) and the resting spot (red diamond).")
 
 st.markdown("## 2. The light at touchdown")
 c = st.columns(4)
@@ -92,8 +92,8 @@ fig.update_layout(template="gnomon", height=380, xaxis=dict(title="m", scaleanch
                   margin=dict(l=50, r=10, t=20, b=40))
 d1, d2 = st.columns([1, 1.2])
 d1.plotly_chart(fig, config=plots.CONFIG, key="ath_shadow")
-d1.caption("NASA MMGIS sightmap at touchdown on 20 m LOLA terrain, 600 m square: all gold, all lit. The red circle "
-           "is the size of Athena's 20 m crater: one pixel.")
+d1.caption(f"NASA MMGIS sightmap at touchdown on 20 m LOLA terrain, 600 m square: {100 * (grid == 1).mean():.1f}% lit "
+           "(gold). The red circle is the size of Athena's 20 m crater: one pixel.")
 depth = np.array([0.1, 0.2]) * 20
 reach = depth / np.tan(np.radians(light["sun_el"]))
 d2.markdown(f"<p class='g-say'>The 20 m terrain says the whole landing zone was in sunlight. LROC found Athena "

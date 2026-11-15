@@ -50,7 +50,7 @@ now = _explain(site_id, orig["date"], sc["lander_key"], sc["days"])
 name = engine.load_site(site_id).name
 st.markdown(f"<p class='g-say'>Planned: {name}, landing {planned:%-d %b %Y}, Sun and link "
             f"{before['pct_both']:.0f}% of the time. After a {slip}-day slip you land {orig['date']:%-d %b %Y}: "
-            f"{now['pct_both']:.0f}%, battery {'survives' if now['survives'] else 'fails'}"
+            f"{now['pct_both']:.0f}%"
             f"{'' if slip == 0 else ' (' + ', '.join(replan.what_changed(before, now)) + ')'}.</p>",
             unsafe_allow_html=True)
 
@@ -75,7 +75,7 @@ st.markdown("### Every site, every landing day")
 st.plotly_chart(plots.replan_heatmap(df, slipped, site_id), config=plots.CONFIG, key="rp_heat")
 st.caption(f"Rows: candidate sites. Across: landing dates within 60 days of the slipped landing ({slipped:%-d %b %Y}, "
            f"dotted line). Colour: share of a {sc['days']}-day mission with both Sun and a usable link to Earth "
-           "(brighter is better). Red crosses: the battery falls below 20 % on that plan.")
+           "(brighter is better). Red dots: the battery falls below 20 % on that plan.")
 if sc["expert"]:
     st.download_button("Download the grid (CSV)", df.to_csv(index=False).encode(), "gnomon_replan.csv", "text/csv",
                        icon=":material/download:")

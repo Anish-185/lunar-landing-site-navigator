@@ -14,6 +14,7 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | USGS Gazetteer of Planetary Nomenclature, Moon feature centre points (`MOON_nomenclature_center_pts.zip`) | USGS Astrogeology / IAU WGPSN | Public domain (U.S. Government) | Names, centres and diameters of craters and montes for naming the terrain that blocks the Sun or Earth; reduced to `data/derived/lunar_features.csv` | https://planetarynames.wr.usgs.gov/ |
 | AVGVISIB PDS labels and illumination README (LOLA PDS node) | NASA GSFC / MIT | NASA public data | Definition of the AVGVISIB values (any part of the disc visible) for our validation | http://imbrium.mit.edu/EXTRAS/ILLUMINATION/ |
 | JPL Horizons (apparent Sun and Earth AZ/EL for observers on the Moon) | NASA JPL Solar System Dynamics | NASA public service | Validation reference for our ephemeris; responses cached in `tests/fixtures/horizons.csv` | https://ssd.jpl.nasa.gov/horizons/ |
+| LRO Diviner Polar Resource Product, south (`DLRE_PRP_SOUTH.TAB`, PDS data set LRO-L-DLRE-5-PRP-V2.0, doi:10.17189/1520650; PDS4 bundle `lro_diviner_derived1`) | NASA / UCLA Diviner team (D. A. Paige). Cite: Paige et al. (2010), Science 330, 479–482, doi:10.1126/science.1187726 | NASA public data | Phase 9 thermal layer: annual max/average surface temperature and ice depth, gridded to 1 km (`data/derived/thermal_south.npz`) and averaged within 500 m of each site (`data/derived/site_thermal.csv`); cold traps < 110 K | https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_prp/ |
 | DSN complex positions (Goldstone, Madrid, Canberra) | NASA JPL Deep Space Network | NASA public data | Moon elevation at each complex (`navigator/comms.py`) | https://www.nasa.gov/directorates/somd/space-communications-navigation-program/deep-space-network/ |
 
 ## Images and textures (NASA public-domain media; fetched and compressed by `pipeline/media.py`)
@@ -74,6 +75,7 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | Fontsource (font packaging) | MIT (fonts themselves OFL) | Self-hosted fonts | https://fontsource.org |
 | Vite | MIT | Build tool (dev only) | https://vite.dev |
 | Playwright | Apache-2.0 | Screenshots of the app and story site (dev only) | https://playwright.dev |
+| Lighthouse (run once via `npx`, not a dependency) | Apache-2.0 | Performance and accessibility audit of the story site | https://github.com/GoogleChrome/lighthouse |
 
 ### Offline pipeline and tests only (`pipeline/environment.yml`, on top of the above)
 
@@ -118,7 +120,10 @@ Pulled in by the pipeline packages above (mostly GDAL, GeoPandas, Shapely) and i
 | Project | Link | What inspired us |
 |---|---|---|
 | Iftee07/lunar-mission-planner | https://github.com/Iftee07/lunar-mission-planner | "Move a little" ring of nearby points around a target; we sample a lander-specific Gaussian landing ellipse instead |
-| MdAhbab/PolarWindow | https://github.com/MdAhbab/PolarWindow | Scoring landing dispersion (share of ellipse points that pass); we score every criterion per point |
+| Iftee07/lunar-mission-planner (again) | https://github.com/Iftee07/lunar-mission-planner | A plain-English "why" on every verdict, and an equator vs pole comparison preset |
+| MdAhbab/PolarWindow | https://github.com/MdAhbab/PolarWindow | Scoring landing dispersion (share of ellipse points that pass); we score every criterion per point. Also "a ± on every number": our countdown windows from LOLA's height error |
+| kaizarmerchantt-git/clps-lunar-mission-browser | https://github.com/kaizarmerchantt-git/clps-lunar-mission-browser | Battery state-of-charge track over the mission; a mast-height control (we plot the whole mast curve); a window finder (our Slip Replanner grid) |
+| rafaa-sf/L-SEA | https://github.com/rafaa-sf/L-SEA | Long window finder across dates; DSN station tracking of the Moon (we use Skyfield with the shipped DE440s kernel) |
 
 ## Research and mission references
 
