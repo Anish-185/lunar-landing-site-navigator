@@ -54,3 +54,4 @@ One line each: decision + why. Written during the autonomous run of Phases 4–9
 - Submission: fixed "Open full screen" (never opened: the smooth-scroll handler was bound at load to every a[href^="#"], including the console link before its href was set). Now one delegated handler checks the href at click time. Checked by site/scripts_verify_live.mjs.
 - Submission: console iframe frames <app>/~/+/?embed=true on *.streamlit.app. Why: Cloud's embed wrapper collapsed the app to 150 px (measured); the full-screen link keeps the wrapper URL for the wake-up button.
 - Submission: pole-map site markers hide once the zoom carries them under the header or off the screen edge (checked every scroll frame only while zoomed, 13 markers).
+- Submission: Firefox/WebKit heading check skipped again: Playwright's Firefox download timed out (azureedge, 30 s) and stalled on retry; stopped after ~4 min as planned.
