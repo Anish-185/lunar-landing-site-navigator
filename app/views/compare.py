@@ -63,6 +63,8 @@ higher_better = {"Sunlit (%)", "Link usable (%)", "Sun and link (%)", "Lowest ba
 
 def _best(row):
     target = row.max() if row.name in higher_better else row.min()
+    if row.nunique() == 1:                       # a tie everywhere (e.g. no eclipses at all) has no winner
+        return [""] * len(row)
     return ["background-color: rgba(244,184,96,.22); font-weight: 600" if v == target and len(row) > 1 else ""
             for v in row]
 

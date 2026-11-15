@@ -62,6 +62,7 @@ function athena(el, d) {
 }
 
 // Row labels: drop the parenthetical ("(Artemis III region)", "(Shackleton rim)") so names never clip.
+const narrow = window.innerWidth < 700;
 const short = (n) => n.replace(/\s*\(.*?\)\s*/g, " ").replace(/^Peak near /, "").trim();
 
 function slip(el, d) {
@@ -72,11 +73,12 @@ function slip(el, d) {
   Plotly.newPlot(el, [
     { type: "heatmap", x: s.dates, y: s.names.map(short), z: s.pct_both, zmin: 0, zmax: 100,
       colorscale: [[0, "#0B0D17"], [0.3, "#2E2826"], [0.6, "#B9803F"], [0.85, SUN], [1, "#FFE9C2"]],
-      colorbar: { title: { text: "Sun + link %", side: "right" }, thickness: 10, tickfont: { color: DIM } },
+      colorbar: narrow ? { orientation: "h", y: -0.16, thickness: 8, len: 0.9, title: { text: "Sun + link %", side: "top" }, tickfont: { color: DIM } }
+        : { title: { text: "Sun + link %", side: "right" }, thickness: 10, tickfont: { color: DIM } },
       hovertemplate: "%{y}<br>land %{x|%-d %b %Y}<br>Sun + link %{z:.0f}%<extra></extra>" },
     { x: fails.x, y: fails.y, mode: "markers", marker: { symbol: "circle", size: 3, color: ALARM, opacity: 0.55 },
       hovertemplate: "%{y}, %{x|%-d %b}: battery runs flat<extra></extra>" },
-  ], base({ margin: { l: 12, r: 16, t: 16, b: 44 }, yaxis: { ...axis, autorange: "reversed", automargin: true, tickfont: { ...axis.tickfont, family: FONT.family, size: 11 } }, xaxis: { ...axis, tickformat: "%-d %b" },
+  ], base({ margin: { l: 12, r: narrow ? 8 : 16, t: 16, b: narrow ? 96 : 44 }, yaxis: { ...axis, autorange: "reversed", automargin: true, tickfont: { ...axis.tickfont, family: FONT.family, size: 11 } }, xaxis: { ...axis, tickformat: "%-d %b" },
     shapes: shape(new Date(Date.parse(s.planned) + s.slip_days * 864e5).toISOString()) }), cfg);
   document.addEventListener("slip", (e) => Plotly.relayout(el, { shapes: shape(new Date(e.detail).toISOString()) }));
 }

@@ -154,8 +154,8 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
 /* Before the 3D wakes: the limb of a dark Moon with a thin rim of grazing sunlight on its right edge. */
 .limb { position: absolute; width: min(130vh, 110vw); aspect-ratio: 1; right: calc(min(130vh, 110vw) * -0.52); top: 50%; translate: 0 -50%;
   border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 30% 50%, #07080D 0 60%, #0B0C12 100%);
-  box-shadow: inset -2px 0 2px rgba(255,233,194,.9), inset -14px 0 28px -6px rgba(255,233,194,.55), inset -70px 0 120px -40px rgba(244,184,96,.28),
-    0 0 90px 10px rgba(244,184,96,.07);
+  box-shadow: inset -3px 0 3px rgba(255,240,215,1), inset -18px 0 34px -6px rgba(255,233,194,.7), inset -90px 0 140px -40px rgba(244,184,96,.36),
+    0 0 120px 16px rgba(244,184,96,.10);
   opacity: 0; animation: limb-in 1.6s var(--ease-out) .5s forwards; transition: opacity .8s var(--ease-out), translate 1.2s var(--ease-out); }
 .limb.gone { opacity: 0 !important; translate: 6% -50%; animation: none; }
 @keyframes limb-in { from { opacity: 0; translate: 4% -50%; } to { opacity: 1; translate: 0 -50%; } }
@@ -201,6 +201,9 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
 .marker span { position: absolute; left: 12px; top: -7px; rotate: -45deg; transform-origin: left; white-space: nowrap; font-size: .75rem; color: var(--ink); text-shadow: 0 1px 3px #000, 0 0 8px #000; opacity: 0; transition: opacity .4s var(--ease-out); }
 .pole.zoomed .marker span { opacity: .9; }
 .pole-copy { position: absolute; left: var(--gutter); bottom: 9vh; max-width: 30rem; z-index: 3; }
+.pole-copy::before { content: ""; position: absolute; inset: -30% -40% -20% -30%; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 60%, rgba(5,6,11,.82), rgba(5,6,11,.5) 45%, transparent 70%); }
+.pole-copy .body.dim { color: #CFCBC2; }
 .pole-copy .body { text-shadow: 0 1px 12px rgba(5,6,11,.95), 0 0 2px rgba(5,6,11,.9); }
 .sun-handle { position: absolute; z-index: 3; right: var(--gutter); bottom: 9vh; text-align: right; color: var(--ink-dim); font-size: .8125rem; max-width: 19rem;
   padding: 14px 16px; border-radius: 12px; background: rgba(5,6,11,.78); border: 1px solid var(--edge); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
@@ -244,7 +247,7 @@ em.alarm { color: var(--alert); font-style: normal; }
 .readout b { color: var(--ink); font-weight: 500; }
 .readout .why { display: block; color: var(--alert); }
 @media (max-width: 900px) { .sun .copy-col { grid-template-columns: 1fr; } }
-@media (max-width: 760px) { #sun-svg { width: 1100px; height: 300px; } .readout { position: static; text-align: left; margin-bottom: .4rem; } .sun .sticky { padding-top: 11vh; gap: var(--s-4); } }
+@media (max-width: 760px) { #sun-svg { width: 820px; height: 280px; } .readout { position: static; text-align: left; margin-bottom: .4rem; } .sun .sticky { padding-top: 11vh; gap: var(--s-4); } }
 
 /* Split chapters on the 12-column grid: copy 1-5, figure 6-12 (mirrored when reversed). */
 .split { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--col-gap); align-items: center;
@@ -321,7 +324,7 @@ em.alarm { color: var(--alert); font-style: normal; }
 .proofs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--col-gap); margin: var(--s-7) 0 var(--s-8); }
 .proof { border-top: 1px solid var(--edge-lit); padding-top: var(--s-5); }
 .proof b { display: block; white-space: nowrap; font-weight: 300; font-size: clamp(2.4rem, 4.4vw, 3.8rem); line-height: 1; letter-spacing: -.04em; color: var(--sun-hot); }
-.proof span { color: var(--ink-dim); font-size: .875rem; display: block; margin-top: var(--s-4); max-width: 26rem; }
+.proof > span { color: var(--ink-dim); font-size: .875rem; display: block; margin-top: var(--s-4); max-width: 26rem; }
 @media (max-width: 800px) { .proofs { grid-template-columns: 1fr; } }
 table.ev { width: 100%; border-collapse: collapse; font-size: .875rem; }
 table.ev th { text-align: left; font-weight: 500; color: var(--ink-dim); border-bottom: 1px solid var(--edge); padding: .6rem .5rem; }

@@ -46,3 +46,4 @@ One line each: decision + why. Written during the autonomous run of Phases 4–9
 - Design v2: relit terrain heightmap 768 px with 3.5 m quantisation (686 kB PNG, loaded only when the pole chapter is near). Why: 1024 px at full 16 bits was 1.7 MB of incompressible low-byte noise.
 - Design v2: reference screenshots (docs/design/refs/) gitignored. Why: they are other people's work, studied for design language only.
 - Design v2: loader capped at 1.4 s, click/key skips it, and a CSS failsafe hides it after 3 s even if the script fails. Why: usability is 30 % of the score and loaders that gate content lose it.
+- Design v2: merged into main. Why: jury v1 6.42 → v2 7.84 ("clearly better side by side"), make test passes (227), Lighthouse desktop 99/100/100/100. Firefox/WebKit heading crops not verified (Playwright's browser download hung and was stopped).
