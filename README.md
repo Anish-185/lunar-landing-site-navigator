@@ -3,7 +3,8 @@
 NASA Space Apps 2026. At the Moon's south pole the Sun never climbs: it circles the horizon, a degree or two up, and a ridge 100 km away can switch your lander off. Earth bobs up and down with libration and drops behind the terrain for days. Gnomon tells you, for any site and landing time, when you will have sunlight and a line of sight to Earth, **which ridge is to blame** when you don't, how likely a good landing is across the whole landing ellipse, and **what to do when the launch slips**.
 
 - **Story site:** https://anish-185.github.io/lunar-landing-site-navigator/ (scroll-driven, built on the same data)
-- **Mission console:** the Streamlit app in `app/` (deploy steps below)
+- **Mission console (live):** https://gnomon-moon.streamlit.app (the Streamlit app in `app/`; also embedded in the story site). If it shows Streamlit's sleep screen, click **"Yes, get this app back up"** and wait ~30 s.
+- **Demo (30 s video + 7-slide deck):** https://anish-185.github.io/lunar-landing-site-navigator/demo/
 - **Design:** art direction, research, critique and jury scores in [`docs/design/`](docs/design/)
 - **Method and known limits:** [`docs/METHOD.md`](docs/METHOD.md) · **Decisions log:** [`docs/DECISIONS.md`](docs/DECISIONS.md) · **Credits:** [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md)
 
