@@ -27,9 +27,19 @@ def _gdal_path(src: str | Path) -> str:
     return f"/vsicurl/{src}" if src.startswith(("http://", "https://")) else src
 
 
+def _is_file(s: str) -> bool:
+    """True for an existing path; False for anything else, including WKT strings longer than a path may be."""
+    if "[" in s or len(s) > 1024:
+        return False
+    try:
+        return Path(s).exists()
+    except OSError:
+        return False
+
+
 def _crs(crs_or_path) -> pyproj.CRS:
     s = str(crs_or_path)
-    if isinstance(crs_or_path, (str, Path)) and (s.startswith(("http://", "https://")) or Path(s).exists()):
+    if isinstance(crs_or_path, (str, Path)) and (s.startswith(("http://", "https://")) or _is_file(s)):
         with rasterio.Env(**VSICURL_ENV), rasterio.open(_gdal_path(s)) as ds:
             return pyproj.CRS.from_wkt(ds.crs.to_wkt())
     return pyproj.CRS.from_user_input(crs_or_path)

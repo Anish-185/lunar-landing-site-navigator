@@ -1,0 +1,31 @@
+# Flown missions: what was reported about the end of surface operations, for the Evidence page hindcast.
+# Each entry quotes its source page (checked 2026-11-15). "ended_by" says whether sunset ended the mission.
+missions:
+  - site_id: chandrayaan_3
+    name: Chandrayaan-3 (Vikram)
+    landing_utc: "2023-08-23T12:33:00Z"
+    reported_end: "about 2023-09-04 (twelve days after landing)"
+    ended_by: sunset
+    quote: "it was shut down at sunset over the landing site, twelve days after landing."
+    source_url: https://en.wikipedia.org/wiki/Chandrayaan-3
+  - site_id: im1_odysseus
+    name: IM-1 (Odysseus)
+    landing_utc: "2024-02-22T23:23:53Z"
+    reported_end: "2024-02-29 (last contact)"
+    ended_by: sunset
+    quote: "On February 29, Odysseus lost power and shut down with the start of the lunar night"
+    source_url: https://en.wikipedia.org/wiki/IM-1
+  - site_id: im2_actual
+    name: IM-2 (Athena)
+    landing_utc: "2025-03-06T17:28:50Z"
+    reported_end: "2025-03-07 06:15 UTC (last contact)"
+    ended_by: power (lander on its side in a shadowed crater)
+    quote: "By 7 March, Athena's power had been fully depleted and was not expected to replenish"
+    source_url: https://en.wikipedia.org/wiki/IM-2
+  - site_id: blue_ghost_1
+    name: Blue Ghost Mission 1
+    landing_utc: "2025-03-02T08:34:00Z"
+    reported_end: "2025-03-16 23:25 UTC, about 5 h after sunset (so sunset ~18:25 UTC)"
+    ended_by: sunset
+    quote: "About 5 hours after lunar sunset on March 16, 2025, the solar-powered lander's batteries depleted"
+    source_url: https://en.wikipedia.org/wiki/Blue_Ghost_Mission_1

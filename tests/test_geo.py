@@ -130,3 +130,15 @@ def test_spatial_reference_matches_osr(both):
     cct = cosr.CoordinateTransformation(cs.CloneGeogCS(), cs)
     for lon, lat in [(0, -85), (90, -88), (-137.3, -89.45), (179.9, -80.5)]:
         assert cct.TransformPoint(lon, lat)[:2] == pytest.approx(ct.TransformPoint(lon, lat)[:2], abs=1e-6)
+
+
+def test_crs_accepts_a_long_wkt_string():
+    """Regression: a WKT string was checked with Path.exists(), which raises ENAMETOOLONG."""
+    import rasterio
+
+    from navigator import geo as g
+
+    with rasterio.open(g.Path(__file__).resolve().parents[1] / "data" / "derived" / "dem_80s_160m.tif") as ds:
+        wkt = ds.crs.to_wkt()
+    x, y = g.latlon_to_xy(-85.0, 0.0, wkt)
+    assert abs(x) < 1 and y > 0

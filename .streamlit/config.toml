@@ -1,0 +1,39 @@
+# Gnomon theme: deep space base; colour carries meaning (Sun gold, Earth blue, terrain grey, fail red).
+[server]
+enableStaticServing = true
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+
+[theme]
+base = "dark"
+primaryColor = "#F6B94A"
+backgroundColor = "#070B24"
+secondaryBackgroundColor = "#11163A"
+textColor = "#ECE9F7"
+linkColor = "#59A8FF"
+borderColor = "#2A2F5C"
+font = "Hanken Grotesk, sans-serif"
+headingFont = "Fraunces, serif"
+headingFontWeights = 400
+baseRadius = "0.6rem"
+showWidgetBorder = true
+chartCategoricalColors = ["#F6B94A", "#59A8FF", "#A7A9B4", "#FF5A5F", "#B58CFF", "#6FE0C2"]
+
+[[theme.fontFaces]]
+family = "Hanken Grotesk"
+url = "app/static/fonts/hanken-grotesk-latin-wght-normal.woff2"
+weight = "100 900"
+
+[[theme.fontFaces]]
+family = "Fraunces"
+url = "app/static/fonts/fraunces-latin-full-normal.woff2"
+weight = "100 900"
+
+[theme.sidebar]
+backgroundColor = "#0B0F2E"
+secondaryBackgroundColor = "#151A44"

@@ -14,6 +14,24 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | USGS Gazetteer of Planetary Nomenclature, Moon feature centre points (`MOON_nomenclature_center_pts.zip`) | USGS Astrogeology / IAU WGPSN | Public domain (U.S. Government) | Names, centres and diameters of craters and montes for naming the terrain that blocks the Sun or Earth; reduced to `data/derived/lunar_features.csv` | https://planetarynames.wr.usgs.gov/ |
 | AVGVISIB PDS labels and illumination README (LOLA PDS node) | NASA GSFC / MIT | NASA public data | Definition of the AVGVISIB values (any part of the disc visible) for our validation | http://imbrium.mit.edu/EXTRAS/ILLUMINATION/ |
 | JPL Horizons (apparent Sun and Earth AZ/EL for observers on the Moon) | NASA JPL Solar System Dynamics | NASA public service | Validation reference for our ephemeris; responses cached in `tests/fixtures/horizons.csv` | https://ssd.jpl.nasa.gov/horizons/ |
+| DSN complex positions (Goldstone, Madrid, Canberra) | NASA JPL Deep Space Network | NASA public data | Moon elevation at each complex (`navigator/comms.py`) | https://www.nasa.gov/directorates/somd/space-communications-navigation-program/deep-space-network/ |
+
+## Images and textures (NASA public-domain media; fetched and compressed by `pipeline/media.py`)
+
+| Resource | Credit | License | Use | Link |
+|---|---|---|---|---|
+| Hubble, "Mystic Mountain" in the Carina Nebula (NASA image GSFC_20171208_Archive_e002076) | NASA, ESA, and M. Livio and the Hubble 20th Anniversary Team (STScI) | Public domain (NASA / STScI, no copyright asserted) | Darkened app background (`app/static/nebula.webp`) and story-site nebula layer | https://images.nasa.gov/details/GSFC_20171208_Archive_e002076 |
+| CGI Moon Kit: LROC colour mosaic with poles (`lroc_color_poles_2k.tif`) and LOLA elevation (`ldem_3_8bit.jpg`), NASA SVS 4720 | NASA's Scientific Visualization Studio; LRO LROC and LOLA teams | NASA public domain | 3D Moon texture and bump map on the story site | https://svs.gsfc.nasa.gov/4720 |
+| Blue Marble (`bluemarble-2048.png`), NASA SVS 2915 | NASA Goddard Space Flight Center / SVS (Blue Marble: Reto Stöckli, NASA Earth Observatory) | NASA public domain | 3D Earth texture on the story site | https://svs.gsfc.nasa.gov/2915 |
+| South-pole hillshade (`site/public/media/pole_hillshade.webp`) | Ours, computed from the LOLA 80 m DEM (PGDA 90, above) at an 8° Sun | Derived from NASA public data | Parallax terrain layers on the story site | `pipeline/media.py` |
+
+## Fonts and icons
+
+| Resource | License | Use | Link |
+|---|---|---|---|
+| Fraunces (variable), via Fontsource `@fontsource-variable/fraunces` | SIL Open Font License 1.1 (`app/static/fonts/LICENSE-Fraunces-OFL.txt`) | Headings, app and story site | https://github.com/undercasetype/Fraunces |
+| Hanken Grotesk (variable), via Fontsource `@fontsource-variable/hanken-grotesk` | SIL Open Font License 1.1 (`app/static/fonts/LICENSE-HankenGrotesk-OFL.txt`) | Body text and numbers | https://github.com/marcologous/hanken-grotesk |
+| Lucide icons (`lucide`, `lucide-static`) | ISC (`app/static/icons/LICENSE-lucide-ISC.txt`) | Status and card icons | https://lucide.dev |
 
 ## Site catalog sources (`pipeline/sites.yaml`, `pipeline/landers.yaml`)
 
@@ -44,6 +62,18 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | rasterio | BSD-3-Clause | DEM reads and windows; backs the GDAL stand-in in `navigator/geo.py` | https://github.com/rasterio/rasterio |
 | pyproj (wraps PROJ, MIT) | MIT | Polar stereographic projection; backs the OSR stand-in in `navigator/geo.py` | https://github.com/pyproj4/pyproj |
 | PyYAML | MIT | Site and lander catalogs | https://github.com/yaml/pyyaml |
+
+### Story site (`site/package.json`, built with Vite to static files)
+
+| Library | License | Use | Link |
+|---|---|---|---|
+| three.js | MIT | 3D Moon and Earth, Big Bang particle opening | https://threejs.org |
+| Lenis | MIT | Smooth scrolling | https://github.com/darkroomengineering/lenis |
+| Motion (motion.dev) | MIT | Scroll-linked reveals and parallax (instead of GSAP, whose license is not OSI open source) | https://motion.dev |
+| Plotly.js (`plotly.js-dist-min`) | MIT | Story charts | https://github.com/plotly/plotly.js |
+| Fontsource (font packaging) | MIT (fonts themselves OFL) | Self-hosted fonts | https://fontsource.org |
+| Vite | MIT | Build tool (dev only) | https://vite.dev |
+| Playwright | Apache-2.0 | Screenshots of the app and story site (dev only) | https://playwright.dev |
 
 ### Offline pipeline and tests only (`pipeline/environment.yml`, on top of the above)
 

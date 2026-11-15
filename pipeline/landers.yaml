@@ -71,7 +71,7 @@ landers:
     cruise_days: 5
     ellipse_sigma_m: 33
     array_W: 3000
-    battery_Wh: 20000
+    battery_Wh: 50000
     load_W: 1000
     panel: vertical
     sources:

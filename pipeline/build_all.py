@@ -36,6 +36,7 @@ class Step:
     inputs: list = field(default_factory=list)     # paths or glob patterns relative to ROOT
     outputs: list = field(default_factory=list)    # paths or glob patterns relative to ROOT (each must match)
     report: Callable[[object], str] | None = None
+    extra: Callable[[], str] | None = None         # extra input value (e.g. the few config fields a step uses)
 
 
 def _files(patterns) -> list[Path]:
@@ -60,6 +61,8 @@ def fingerprint(step: Step) -> str:
         h.update(inspect.getsource(obj).encode())
     for p in _files(step.inputs):
         h.update(f"{p.relative_to(ROOT)}:{_file_stamp(p)}\n".encode())
+    if step.extra:
+        h.update(step.extra().encode())
     return h.hexdigest()
 
 
@@ -84,13 +87,21 @@ def save_state(state: dict) -> None:
     STATE.write_text(json.dumps(state, indent=1, sort_keys=True))
 
 
+def _tile_landers() -> str:
+    from pipeline.sites import load_landers, load_sites
+
+    landers = load_landers()
+    return json.dumps({s["id"]: [s["lander"], landers[s["lander"]]["ellipse_sigma_m"]] for s in load_sites()
+                       if s["in_polar_dem"]}, sort_keys=True)
+
+
 def steps() -> list[Step]:
     # Imported here so `--help` and the state helpers work without the pipeline's heavy dependencies.
     from navigator import engine, geo
-    from pipeline import ephem, horizon, sites
+    from pipeline import ephem, horizon, layers, media, sites
     from vendor.mmgis_sightline import HorizonProfile
 
-    cfg = ["pipeline/sites.yaml", "pipeline/landers.yaml"]
+    cfg = ["pipeline/sites.yaml"]  # landers.yaml feeds only the tile step, through _tile_landers
     site_code = [sites]
     hz_code = [horizon.window_path, horizon.cache_windows, horizon._sample, horizon.two_field_horizon,
                horizon.smooth_sphere_horizon, horizon.site_horizon, HorizonProfile, geo.name_points,
@@ -116,13 +127,15 @@ def steps() -> list[Step]:
         Step("site_psr", horizon.site_psr_table, [horizon.site_psr_table, horizon.psr_distances, *site_code],
              cfg + ["data/raw/pgda90/LPSR_80S_20MPP_ADJ_1km2.*", "data/derived/dem_80s_160m.tif"],
              ["data/derived/site_psr.csv"]),
+        # Tiles use landers.yaml only for each site's ellipse sigma: hash that, not the whole file, so editing
+        # illustrative power numbers does not rerun the 28-minute step.
         Step("tiles", horizon.build_tiles,
              [horizon.build_tiles, horizon.ellipse_points, horizon._one_point, horizon.psr_distances, *hz_code,
               *site_code],
-             cfg + ["data/raw/windows/*", "data/raw/pgda90/LDEM_80S_80MPP_ADJ.TIF",
-                    "data/raw/pgda90/LPSR_80S_20MPP_ADJ_1km2.*", "data/derived/lunar_features.csv"],
+             ["pipeline/sites.yaml", "data/raw/windows/*", "data/raw/pgda90/LDEM_80S_80MPP_ADJ.TIF",
+              "data/raw/pgda90/LPSR_80S_20MPP_ADJ_1km2.*", "data/derived/lunar_features.csv"],
              ["data/derived/tiles/*.npz"],
-             report=lambda t: f"{len(t)} sites"),
+             report=lambda t: f"{len(t)} sites", extra=_tile_landers),
         Step("avgvisib_validation", horizon.validate_avgvisib,
              [horizon.validate_avgvisib, horizon._visible_fractions, engine.sun_earth_azel, *site_code],
              cfg + ["data/derived/horizons/*.npz", "data/raw/pgda69/*.TIF", "data/derived/kernels/*"],
@@ -132,6 +145,12 @@ def steps() -> list[Step]:
              [horizon.avgvisib_neighbourhood, *site_code],
              cfg + ["data/raw/pgda69/*.TIF", "data/derived/validation_avgvisib.csv"],
              ["data/derived/validation_avgvisib_range.csv"]),
+        Step("map_layers", layers.build_map_layers, [layers],
+             ["data/raw/pgda69/AVGVISIB_75S_120M_201608*.TIF"], ["data/derived/map_avgvisib.npz"]),
+        Step("media", media.build, [media],
+             ["data/raw/media/*", "data/derived/dem_80s_160m.tif"],
+             ["app/static/nebula.webp", "site/public/media/moon_color.jpg", "site/public/media/earth.jpg",
+              "site/public/media/pole_hillshade.webp"]),
     ]
 
 

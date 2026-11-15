@@ -2,7 +2,7 @@
 
 Kept up to date with the code (CLAUDE.md rule 7). Each section gives what we compute, which library or NASA product does it, and what it does not model.
 
-Status: Phase 5 (engine: visibility, eclipses, events, comms, power, scores, landing light and landing-zone odds), on top of the Phase 3–4 terrain and build. Sections marked *planned* describe the intended method; they are rewritten when the code lands.
+Status: Phase 6 (Streamlit app on the Phase 5 engine and the Phase 3–4 terrain and build). Sections marked *planned* describe the intended method; they are rewritten when the code lands.
 
 ## Conventions
 
@@ -122,6 +122,12 @@ All in `navigator/`, pure NumPy/pandas, hourly samples. `engine.timeline(site, s
 - **Landing light** (`landing.landing_light`): Sun elevation and azimuth at touchdown; angle to the approach heading (default 180°, descent along the local meridian toward the pole); "sun in camera" when within 30° of the heading and below 10° elevation; **% of the landing zone in shadow = share of the site's 200 ellipse points whose own horizon at the Sun's azimuth is above the Sun's elevation**; shadow length of a 1 m boulder = 1/tan(el). Rating: bad if the Sun is down or ≥ 50% of the zone is shadowed; caution if sun in camera, ≥ 10% shadowed or the Sun below 1°; good otherwise (thresholds illustrative). Pure NumPy, any time, no GDAL. NASA lists approach lighting and surface lighting among the Artemis III landing requirements.
 - **Landing-zone odds** (`landing.ellipse_odds`): the mission is run at each of the 200 precomputed ellipse points with its own horizon (Sun/Earth directions from the site; they change by < 0.01° over 100 m). Pass criteria per point: **slope ≤ 10°** (NASA, "Key Artemis III Landing Requirements": "Surface slope for landing (100m): <10 deg"; our slope is the 20 m LDSM at the point, a shorter baseline than 100 m, so it is conservative); battery stays above 20%; link usable ≥ 50% of the mission (illustrative); Sun visible at touchdown. P(success) = share of points passing all four.
 
+
+## App (Phase 6)
+
+Streamlit (`app/Home.py` routes to `app/pages/`), Plotly for every chart, no network at runtime. The sidebar scenario (site or custom lat/lon, landing UTC, mission length, mast, lander, approach heading, Simple/Expert) is mirrored in the URL query string, so a copied link reproduces the view. Custom sites in 80–90°S get their horizon in the app from the shipped 160 m DEM through the vendored MMGIS HorizonProfile on the rasterio/pyproj stand-ins (~0.1 s per mast height), labelled "coarser terrain (160 m) than catalog sites". The Map page draws NASA's AVGVISIB maps averaged to 2.5 km (`data/derived/map_avgvisib.npz`, 77 kB) and PSR outlines from `psr_outlines.geojson` (only PSRs > 3 km² are drawn, for speed). The Evidence page shows the Horizons residuals, our long-run Sun/Earth fractions against NASA's value and NASA's own range within 420 m, and a hindcast of four flown landers: our first sunset after landing vs the reported end of the mission (`pipeline/hindcast.yaml`, each quoted from its source). Results: Chandrayaan-3, our sunset 4 Sep 2023 08:49 UTC vs "shut down at sunset … twelve days after landing" (4 Sep); Blue Ghost 1, 16 Mar 2025 20:55 UTC on a smooth sphere vs "about 5 hours after lunar sunset" at 23:25 UTC (sunset ~18:25, so ours is ~2.5 h late, as expected without terrain); IM-1, our sunset 2 Mar 2024 vs last contact 29 Feb (Odysseus lost power earlier than our 2 m terrain sunset); IM-2 ended by power on its side in a crater, not by sunset (ours: 19 Mar).
+
+Design: one stylesheet (`app/style.css`), `.streamlit/config.toml` theme, shared Plotly template `gnomon` in `navigator/plots.py`. Colour carries meaning only: Sun gold, Earth blue, terrain grey, red for no-go/failure; every status also has an icon and a word (Go / Caution / No-go).
 
 ## Known limits
 

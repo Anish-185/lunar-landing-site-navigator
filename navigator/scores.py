@@ -116,3 +116,12 @@ def countdowns(site: engine.Site, tl: pd.DataFrame, now=None) -> dict:
             out[label] = events.countdown(tl["utc"], tl[f"{body}_clear"], now, kind, sigma=sig)
     out["sigma_z_m"] = sz
     return out
+
+
+def first_sunset(site: engine.Site, landing_utc, days: float = 20.0, mast_m: float = 2.0):
+    """First time after `landing_utc` that the whole Sun disc drops behind the site's horizon (clearance + radius
+    crosses zero), refined between hourly samples. NaT if none within `days`."""
+    t0 = pd.Timestamp(landing_utc)
+    t0 = t0.tz_localize("UTC") if t0.tzinfo is None else t0.tz_convert("UTC")
+    tl = engine.timeline(site, t0.floor("1h"), days, mast_m)
+    return events.next_event(tl["utc"], tl["sun_clear"] + tl["sun_r"], t0, "set")

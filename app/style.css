@@ -1,0 +1,127 @@
+/* Gnomon: one stylesheet for the Streamlit app. Colour is physics: Sun gold, Earth blue, terrain grey, fail red.
+   Status words always come with an icon. Background: Hubble's Carina Nebula (NASA, ESA, M. Livio and the Hubble
+   20th Anniversary Team, STScI; public domain), darkened. */
+:root {
+  --void: #070B24;
+  --deep: #0B0F2E;
+  --nebula: #3A1F5C;
+  --sun: #F6B94A;
+  --earth: #59A8FF;
+  --regolith: #A7A9B4;
+  --alarm: #FF5A5F;
+  --go: #5FD4B0;
+  --caution: #FF8A3D;
+  --ink: #ECE9F7;
+  --ink-dim: #A9A6C2;
+  --glass: rgba(17, 22, 58, 0.58);
+  --glass-edge: rgba(167, 169, 180, 0.18);
+}
+
+/* Space behind everything: nebula, a vignette and two star layers that breathe slowly. */
+.stApp {
+  background:
+    radial-gradient(ellipse at 70% -10%, rgba(58, 31, 92, 0.55), transparent 60%),
+    linear-gradient(180deg, rgba(7, 11, 36, 0.72), rgba(7, 11, 36, 0.94) 55%, var(--void)),
+    url("app/static/nebula.webp") center top / cover fixed no-repeat,
+    var(--void);
+}
+.stApp::before, .stApp::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-repeat: repeat;
+}
+.stApp::before {
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 140px 90px, rgba(255,255,255,.8), transparent),
+    radial-gradient(1.5px 1.5px at 260px 180px, #fff, transparent),
+    radial-gradient(1px 1px at 330px 40px, rgba(255,255,255,.7), transparent);
+  background-size: 360px 240px;
+  opacity: .35;
+  animation: twinkle 7s ease-in-out infinite alternate;
+}
+.stApp::after {
+  background-image:
+    radial-gradient(1px 1px at 60px 140px, rgba(246,185,74,.8), transparent),
+    radial-gradient(1px 1px at 210px 20px, rgba(89,168,255,.8), transparent),
+    radial-gradient(1px 1px at 300px 200px, #fff, transparent);
+  background-size: 420px 300px;
+  opacity: .25;
+  animation: twinkle 11s ease-in-out infinite alternate-reverse;
+}
+@keyframes twinkle { from { opacity: .12; } to { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) {
+  .stApp::before, .stApp::after { animation: none; }
+}
+[data-testid="stAppViewContainer"] > .main, [data-testid="stMain"] { position: relative; z-index: 1; }
+[data-testid="stHeader"] { background: transparent; }
+[data-testid="stSidebar"] { background: rgba(11, 15, 46, 0.86); backdrop-filter: blur(14px); }
+
+/* Type */
+h1, h2, h3 { letter-spacing: -0.015em; font-variation-settings: "opsz" 144, "SOFT" 50; }
+h1 { font-weight: 300 !important; }
+.stApp, .stApp p, .stMarkdown { font-feature-settings: "tnum" 1, "ss01" 1; }
+.g-lede { color: var(--ink-dim); font-size: 1.05rem; max-width: 62ch; margin: -0.4rem 0 1.2rem; }
+.g-site-meta { color: var(--ink-dim); font-size: .92rem; }
+.g-site-meta b { color: var(--ink); font-weight: 600; }
+.g-coarse { color: var(--caution); }
+
+/* Glass cards: one per verdict. */
+.g-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  border-radius: 18px;
+  padding: 1.1rem 1.2rem 0.9rem;
+  backdrop-filter: blur(10px);
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.g-card::before {  /* a thin band of the card's own physics colour along the top edge */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--accent, var(--regolith));
+}
+.g-card h4 { margin: 0 0 .1rem; font-family: "Fraunces", serif; font-weight: 400; font-size: 1.25rem; color: var(--ink); }
+.g-card ul { margin: .6rem 0 0; padding-left: 1.05rem; color: var(--ink-dim); font-size: .92rem; line-height: 1.45; }
+.g-card li { margin-bottom: .25rem; }
+.g-card .g-big { font-size: 2.1rem; font-weight: 300; color: var(--ink); line-height: 1.1; margin-top: .35rem; }
+.g-card .g-big small { font-size: .9rem; color: var(--ink-dim); margin-left: .3rem; }
+.g-status { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; font-size: .95rem; }
+.g-status svg { width: 18px; height: 18px; }
+.g-good { color: var(--go); }
+.g-caution { color: var(--caution); }
+.g-bad { color: var(--alarm); }
+.g-title { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.g-title svg { width: 22px; height: 22px; color: var(--accent); }
+
+/* Countdown chips */
+.g-chips { display: flex; flex-wrap: wrap; gap: .55rem; margin: .9rem 0 .4rem; }
+.g-chip {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .45rem .8rem; border-radius: 999px;
+  background: rgba(17, 22, 58, .65); border: 1px solid var(--glass-edge);
+  font-size: .9rem; color: var(--ink);
+}
+.g-chip svg { width: 16px; height: 16px; color: var(--accent, var(--ink-dim)); }
+.g-chip span { color: var(--ink-dim); }
+
+/* Plain-English sentences in Simple mode */
+.g-say { font-size: 1.08rem; line-height: 1.6; max-width: 70ch; color: var(--ink); }
+.g-say .sun { color: var(--sun); } .g-say .earth { color: var(--earth); }
+
+/* Evidence table marks */
+.g-in { color: var(--go); } .g-out { color: var(--alarm); }
+
+/* Plotly charts sit on glass too */
+[data-testid="stPlotlyChart"] {
+  background: rgba(11, 15, 46, .45); border: 1px solid var(--glass-edge); border-radius: 16px; padding: .4rem;
+}
+[data-testid="stCaptionContainer"] { color: var(--ink-dim); }
+[data-testid="stExpander"] details { background: rgba(11, 15, 46, .5); border-radius: 14px; }
+
+@media (max-width: 640px) {
+  .g-card .g-big { font-size: 1.7rem; }
+  h1 { font-size: 2rem !important; }
+}

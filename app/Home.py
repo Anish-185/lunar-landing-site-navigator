@@ -1,7 +1,28 @@
-"""Streamlit entry point. UI only: all logic comes from navigator/ (CLAUDE.md rule 8)."""
+"""Gnomon (Lunar Landing Site Navigator): Streamlit entry point. Draws the shared sidebar once, then runs the page.
+
+Run: streamlit run app/Home.py. The app makes no network calls: everything comes from data/derived/.
+"""
+
+import sys
+from pathlib import Path
 
 import streamlit as st
 
-st.set_page_config(page_title="Lunar Landing Site Navigator", layout="wide")
-st.title("Lunar Landing Site Navigator")
-st.info("Scaffold only. The site view arrives in Phase 6.")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ui  # noqa: E402
+
+PAGES = Path(__file__).resolve().parent / "pages"
+
+ui.setup()
+nav = st.navigation([
+    st.Page(PAGES / "site.py", title="Site", icon=":material/wb_twilight:", default=True),
+    st.Page(PAGES / "compare.py", title="Compare", icon=":material/compare_arrows:"),
+    st.Page(PAGES / "map.py", title="Map", icon=":material/map:"),
+    st.Page(PAGES / "evidence.py", title="Evidence", icon=":material/verified:"),
+], position="top")
+st.session_state["_scenario"] = ui.sidebar()
+st.session_state["_routed"] = True
+try:
+    nav.run()
+finally:
+    st.session_state["_routed"] = False
