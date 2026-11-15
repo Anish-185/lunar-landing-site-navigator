@@ -138,7 +138,17 @@ beats(origin, 0);
     nebula.style.opacity = String(0.45 * ease(0.25, 0.6, p));
     starsL.style.transform = `translateY(${-p * 18}%)`;
     pole.classList.toggle("zoomed", p > 0.5);
+    if (p > 0.5) clearOfBar();
   }, { target: pole, offset: ["start start", "end end"] });
+  // Keep site labels clear of the header: hide a marker once the zoom carries it under the bar (or off screen).
+  const bar = $(".bar"), markers = [...box.children];
+  function clearOfBar() {
+    const top = bar.getBoundingClientRect().bottom + 12;
+    for (const m of markers) {
+      const r = m.getBoundingClientRect();
+      m.classList.toggle("under-bar", r.top < top || r.bottom > innerHeight - 8 || r.left < 8 || r.right > innerWidth - 8);
+    }
+  }
   if (reduced) { terrain.style.opacity = "1"; pole.classList.add("zoomed"); beats(pole, 1); }
 
   // You are the Sun: relight the LOLA cap with cast shadows (WebGL); the hillshade image stays as the fallback.
