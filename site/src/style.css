@@ -78,8 +78,14 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .bar {
   position: fixed; inset: 0 0 auto 0; z-index: 30; display: flex; align-items: center; justify-content: space-between;
   gap: 1rem; padding: 18px var(--gutter);
-  background: linear-gradient(180deg, rgba(5,6,11,.85), rgba(5,6,11,0));
 }
+/* backdrop: dark and blurred under the bar, fading out below it so text never slides under the wordmark */
+.bar::before { content: ""; position: absolute; inset: 0 0 -28px 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(5,6,11,.94), rgba(5,6,11,.72) 62%, rgba(5,6,11,0));
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+.chapter { scroll-margin-top: 0; }
+.h2 { scroll-margin-top: 96px; }
 .wordmark { font-family: var(--serif); font-size: 1.6rem; line-height: 1; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: .55rem; }
 .wordmark svg { width: 22px; height: 22px; }
 .bar-cta { font-size: .875rem; font-weight: 500; color: var(--space); background: var(--sun); padding: .55rem 1rem; border-radius: 999px; text-decoration: none;
@@ -145,6 +151,15 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
   background: #fff; box-shadow: 0 0 18px 6px rgba(255,233,194,.9), 0 0 90px 30px rgba(244,184,96,.3);
   animation: breathe 3.2s ease-in-out infinite; transition: opacity .5s var(--ease-out), transform .6s var(--ease-out); }
 .singularity.gone { animation: none; opacity: 0; transform: scale(8); }
+/* Before the 3D wakes: the limb of a dark Moon with a thin rim of grazing sunlight on its right edge. */
+.limb { position: absolute; width: min(130vh, 110vw); aspect-ratio: 1; right: calc(min(130vh, 110vw) * -0.52); top: 50%; translate: 0 -50%;
+  border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 30% 50%, #07080D 0 60%, #0B0C12 100%);
+  box-shadow: inset -2px 0 2px rgba(255,233,194,.9), inset -14px 0 28px -6px rgba(255,233,194,.55), inset -70px 0 120px -40px rgba(244,184,96,.28),
+    0 0 90px 10px rgba(244,184,96,.07);
+  opacity: 0; animation: limb-in 1.6s var(--ease-out) .5s forwards; transition: opacity .8s var(--ease-out), translate 1.2s var(--ease-out); }
+.limb.gone { opacity: 0 !important; translate: 6% -50%; animation: none; }
+@keyframes limb-in { from { opacity: 0; translate: 4% -50%; } to { opacity: 1; translate: 0 -50%; } }
+@media (max-width: 760px) { .limb { width: 120vw; right: -84vw; } }
 @keyframes breathe { 50% { transform: scale(1.5); opacity: .8; } }
 .hero-copy { position: absolute; left: var(--gutter); bottom: 11vh; max-width: 52rem; }
 .title { font-family: var(--serif); font-weight: 400; font-size: clamp(5rem, 15vw, 13.5rem); line-height: .82; letter-spacing: -.035em; margin: 0 0 0 -.04em; }
@@ -156,7 +171,9 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
 @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
 .big-line { position: absolute; left: var(--gutter); top: 50%; translate: 0 -50%; margin: 0; max-width: 16ch;
   font-family: var(--serif); font-size: clamp(2.4rem, 5.4vw, 5rem); line-height: 1.02; letter-spacing: -.02em; }
-.big-line.low { top: auto; bottom: 10vh; translate: none; max-width: 15ch; }
+.big-line.low { top: auto; bottom: 16vh; translate: none; max-width: 15ch; }
+.big-note { position: absolute; left: var(--gutter); bottom: 9vh; margin: 0; font-size: .8125rem; color: var(--ink-dim); display: flex; align-items: center; gap: .6rem; }
+.big-note::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--sun-hot); box-shadow: 0 0 10px 2px rgba(244,184,96,.7); }
 .big-line em { font-style: italic; color: var(--sun-hot); }
 
 /* --- 2. Pole: the relit LOLA terrain. You are the Sun. --- */
@@ -185,7 +202,8 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-event
 .pole.zoomed .marker span { opacity: .9; }
 .pole-copy { position: absolute; left: var(--gutter); bottom: 9vh; max-width: 30rem; z-index: 3; }
 .pole-copy .body { text-shadow: 0 1px 12px rgba(5,6,11,.95), 0 0 2px rgba(5,6,11,.9); }
-.sun-handle { position: absolute; z-index: 3; right: var(--gutter); bottom: 9vh; text-align: right; color: var(--ink-dim); font-size: .8125rem; max-width: 18rem; }
+.sun-handle { position: absolute; z-index: 3; right: var(--gutter); bottom: 9vh; text-align: right; color: var(--ink-dim); font-size: .8125rem; max-width: 19rem;
+  padding: 14px 16px; border-radius: 12px; background: rgba(5,6,11,.78); border: 1px solid var(--edge); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .sun-handle .rd { display: block; color: var(--sun-hot); font-size: 1.05rem; margin-bottom: .3rem; }
 .sun-handle input { width: 100%; accent-color: var(--sun); margin-top: .6rem; }
 .pole .sticky { cursor: default; touch-action: pan-y; }
@@ -222,7 +240,7 @@ em.alarm { color: var(--alert); font-style: normal; }
 .panorama { margin: 0; position: relative; min-width: 0; }
 #sun-svg { width: 100%; height: clamp(240px, 44vh, 460px); display: block; overflow: hidden; }
 .pan-scroll { overflow: hidden; border-top: 1px solid var(--edge); border-bottom: 1px solid var(--edge); }
-.readout { position: absolute; right: 0; top: -2.2rem; text-align: right; font-size: .875rem; color: var(--ink-dim); min-height: 1.6em; }
+.readout { text-align: right; font-size: .875rem; color: var(--ink-dim); min-height: 3.2em; margin-bottom: .4rem; }
 .readout b { color: var(--ink); font-weight: 500; }
 .readout .why { display: block; color: var(--alert); }
 @media (max-width: 900px) { .sun .copy-col { grid-template-columns: 1fr; } }
@@ -230,7 +248,7 @@ em.alarm { color: var(--alert); font-style: normal; }
 
 /* Split chapters on the 12-column grid: copy 1-5, figure 6-12 (mirrored when reversed). */
 .split { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--col-gap); align-items: center;
-  min-height: 100vh; padding: var(--s-10) var(--gutter); max-width: 1568px; margin: 0 auto; }
+  min-height: 88vh; padding: var(--s-10) var(--gutter); max-width: 1568px; margin: 0 auto; }
 .split > .copy-col { grid-column: 1 / span 5; }
 .split > .chart-fig { grid-column: 7 / span 6; }
 .split.reverse > .chart-fig { grid-column: 1 / span 6; grid-row: 1; }
@@ -302,11 +320,13 @@ em.alarm { color: var(--alert); font-style: normal; }
 /* 9. Evidence */
 .proofs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--col-gap); margin: var(--s-7) 0 var(--s-8); }
 .proof { border-top: 1px solid var(--edge-lit); padding-top: var(--s-5); }
-.proof b { display: block; font-weight: 300; font-size: clamp(2.4rem, 4.4vw, 3.8rem); line-height: 1; letter-spacing: -.04em; color: var(--sun-hot); }
+.proof b { display: block; white-space: nowrap; font-weight: 300; font-size: clamp(2.4rem, 4.4vw, 3.8rem); line-height: 1; letter-spacing: -.04em; color: var(--sun-hot); }
 .proof span { color: var(--ink-dim); font-size: .875rem; display: block; margin-top: var(--s-4); max-width: 26rem; }
 @media (max-width: 800px) { .proofs { grid-template-columns: 1fr; } }
 table.ev { width: 100%; border-collapse: collapse; font-size: .875rem; }
 table.ev th { text-align: left; font-weight: 500; color: var(--ink-dim); border-bottom: 1px solid var(--edge); padding: .6rem .5rem; }
+table.ev a { color: var(--earth); text-decoration-color: rgba(111,177,255,.4); }
+table.ev a:hover { color: var(--sun-hot); text-decoration-color: currentColor; }
 table.ev td { border-bottom: 1px solid rgba(232,228,216,.07); padding: .6rem .5rem; vertical-align: top; }
 table.ev td:nth-child(2), table.ev td:nth-child(3) { font-family: var(--mono); font-size: .8125rem; white-space: nowrap; }
 .hindcast { overflow-x: auto; }
@@ -323,6 +343,8 @@ table.ev td:nth-child(2), table.ev td:nth-child(3) { font-family: var(--mono); f
   .reveal { -webkit-mask-image: none; mask-image: none; transition: none; }
   .beat { opacity: 1; transform: none; transition: none; }
   .cue-line, .singularity { animation: none; }
+  .limb { animation: none; opacity: 1; }
+  .big-note { position: relative; left: auto; bottom: auto; margin: 0 var(--gutter) 2rem; }
   .chapter[style*="--len"] { height: auto; }
   .sticky { position: relative; height: auto; min-height: 100vh; }
   .hero-copy, .big-line, .big-line.low { position: relative; left: auto; right: auto; top: auto; bottom: auto; translate: none; margin: 0 var(--gutter) 2rem; text-align: left; }

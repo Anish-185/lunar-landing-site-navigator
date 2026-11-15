@@ -20,7 +20,7 @@ for (const [label, [w, h]] of Object.entries(sizes)) {
         const el = document.getElementById(id);
         const top = el.getBoundingClientRect().top + scrollY;
         const span = Math.max(el.offsetHeight - innerHeight, 0);
-        window.scrollTo(0, top + span * p + (span === 0 ? el.offsetHeight * p - innerHeight * 0.2 : 0));
+        window.scrollTo(0, top + span * p + (span === 0 ? el.offsetHeight * p - innerHeight * 0.5 : 0));  // non-pinned: the reading point mid-screen
       }, [id, p]);
       await page.waitForTimeout(id === "earth" || id === "ridge" || id === "athena" || id === "slip" ? 2600 : 1400);
       await page.screenshot({ path: `${out}/story_${id}_${Math.round(p * 100)}_${label}.png` });

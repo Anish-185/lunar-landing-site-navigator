@@ -229,13 +229,24 @@ def map_figure(layer: dict, body: str, sites: pd.DataFrame, psr: go.Scatter | No
     return fig
 
 
+def _wrap_labels(labels) -> list[str]:
+    """'1. Chang'e-7 target (Shackleton rim), 18 Jan 2027' -> 'Chang'e-7 target<br>18 Jan 2027': horizontal, never clipped."""
+    out = []
+    for lab in labels:
+        name, _, date = str(lab).rpartition(", ")
+        name = name.split(" (")[0]
+        out.append(f"{name}<br>{date}" if name else str(lab))
+    return out
+
+
 def compare_bars(df: pd.DataFrame) -> go.Figure:
     """% sunlit / link / both per scenario as grouped bars."""
     fig = go.Figure()
     for col, name, colour in (("pct_sunlit", "Sunlit", SUN), ("pct_link", "Link", EARTH), ("pct_both", "Both", INK)):
-        fig.add_trace(go.Bar(x=df["label"], y=df[col], name=name, marker_color=colour,
-                             hovertemplate="%{x}<br>%{y:.0f} %<extra>" + name + "</extra>"))
-    fig.update_layout(template="gnomon", barmode="group", height=360, yaxis=dict(range=[0, 100], ticksuffix=" %"))
+        fig.add_trace(go.Bar(x=_wrap_labels(df["label"]), y=df[col], name=name, marker_color=colour, customdata=df["label"],
+                             hovertemplate="%{customdata}<br>%{y:.0f} %<extra>" + name + "</extra>"))
+    fig.update_layout(template="gnomon", barmode="group", height=380, yaxis=dict(range=[0, 100], ticksuffix=" %"),
+                      xaxis=dict(tickangle=0, automargin=True), margin=dict(b=70))
     return fig
 
 

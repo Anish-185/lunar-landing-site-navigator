@@ -44,22 +44,26 @@ rows = []
 for n, sid, start in picks:
     s = engine.load_site(sid)
     _, summ, _ = ui.run(sid, s.lat, s.lon, start, sc["days"], sc["mast"], sc["lander_key"], sc["relay"])
-    rows.append({"label": f"{n}. {s.name}, {start:%-d %b %Y}", **summ})  # numbered: the same site may repeat
+    rows.append({"label": f"{n}. {s.name}, {start:%-d %b %Y}",  # numbered: the same site may repeat
+                 "col": f"{n}. {s.name.split(' (')[0]}, {start:%-d %b}", **summ})  # short, so four columns fit
 if not rows:
     st.info("Tick at least one scenario to compare.", icon=":material/info:")
     st.stop()
 df = pd.DataFrame(rows)
+# Build from the label-indexed frame: passing Series with a 0..n index plus index=labels would realign every value
+# to NaN (the v1 table showed "None" in every cell).
+by = df.set_index("col")
 table = pd.DataFrame({
-    "Sunlit (%)": df["pct_sunlit"], "Link usable (%)": df["pct_link"], "Sun and link (%)": df["pct_both"],
-    "Longest night (h)": df["longest_night_h"], "Longest blackout (h)": df["longest_blackout_h"],
-    "Lowest battery (%)": 100 * df["min_soc"], "Eclipses": df["eclipses"],
-}, index=df["label"]).T
+    "Sunlit (%)": by["pct_sunlit"], "Link usable (%)": by["pct_link"], "Sun and link (%)": by["pct_both"],
+    "Longest night (h)": by["longest_night_h"], "Longest blackout (h)": by["longest_blackout_h"],
+    "Lowest battery (%)": 100 * by["min_soc"], "Eclipses": by["eclipses"],
+}).astype(float).T
 higher_better = {"Sunlit (%)", "Link usable (%)", "Sun and link (%)", "Lowest battery (%)"}
 
 
 def _best(row):
     target = row.max() if row.name in higher_better else row.min()
-    return ["background-color: rgba(246,185,74,.22); font-weight: 600" if v == target and len(row) > 1 else ""
+    return ["background-color: rgba(244,184,96,.22); font-weight: 600" if v == target and len(row) > 1 else ""
             for v in row]
 
 

@@ -90,6 +90,7 @@ const startCosmos = () => {
   cosmosModule.then(({ createCosmos }) => {
     cosmos = createCosmos($("#cosmos"), { reduced, base: BASE, light: data.light });
     $(".singularity")?.classList.add("gone");
+    $(".limb")?.classList.add("gone");
     toCosmos();
   });
 };

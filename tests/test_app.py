@@ -29,6 +29,16 @@ def test_compare_with_the_same_site_twice():
     assert not at.exception, [e.message for e in at.exception]
 
 
+def test_compare_table_has_numbers_not_none():
+    """Regression: Series realigned to the label index made every cell NaN ("None" on screen)."""
+    at = _run(APP / "views" / "compare.py")
+    assert not at.exception
+    t = at.dataframe[0].value
+    t = getattr(t, "data", t)                      # a Styler exposes its frame as .data
+    assert t.shape[1] >= 2 and t.notna().all().all()
+    assert ((t.loc["Sunlit (%)"] >= 0) & (t.loc["Sunlit (%)"] <= 100)).all()
+
+
 def test_url_reproduces_the_scenario_and_expert_mode():
     at = _run(APP / "views" / "site.py", site="change_7_target", t="2027-03-01T06:00Z", days="7", mast="10",
               mode="expert")

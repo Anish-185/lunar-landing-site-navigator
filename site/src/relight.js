@@ -43,8 +43,8 @@ void main() {
     vec2 uv = vUv + sunDir * t * texel;
     if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) break;
     float ray = z + tanEl * t * px;
-    float d = hN(uv) - ray;
-    lit = min(lit, clamp(1.0 - d / 40.0, 0.0, 1.0));   // 40 m soft edge: the Sun is half a degree wide
+    float d = h(uv) - ray;
+    lit = min(lit, 1.0 - smoothstep(0.0, 1.0, d / (40.0 + 0.0087 * t * px)));   // penumbra grows with distance: the Sun is half a degree wide
     if (lit <= 0.0) break;
     t *= 1.075;
     t += 0.6;
@@ -53,7 +53,7 @@ void main() {
   // Regolith lit by a low gold Sun; shadow lifted by a whisper of earthshine so relief is never pure black.
   vec3 sunCol = vec3(1.0, 0.86, 0.66);
   vec3 col = sunCol * pow(light, 0.75) * 1.25 + vec3(0.035, 0.04, 0.06) * (0.4 + 0.6 * n.z);
-  float vign = smoothstep(1.02, 0.55, length(fromPole));
+  float vign = 1.0 - smoothstep(0.55, 1.02, length(fromPole));
   gl_FragColor = vec4(col * vign, 1.0);
 }`;
 

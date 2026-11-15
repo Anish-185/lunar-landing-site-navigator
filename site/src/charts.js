@@ -61,19 +61,22 @@ function athena(el, d) {
   }), cfg);
 }
 
+// Row labels: drop the parenthetical ("(Artemis III region)", "(Shackleton rim)") so names never clip.
+const short = (n) => n.replace(/\s*\(.*?\)\s*/g, " ").replace(/^Peak near /, "").trim();
+
 function slip(el, d) {
   const s = d.slip;
   const fails = { x: [], y: [] };
-  s.survives.forEach((row, j) => row.forEach((ok, i) => { if (!ok) { fails.x.push(s.dates[i]); fails.y.push(s.names[j]); } }));
+  s.survives.forEach((row, j) => row.forEach((ok, i) => { if (!ok) { fails.x.push(s.dates[i]); fails.y.push(short(s.names[j])); } }));
   const shape = (t) => [{ type: "line", x0: t, x1: t, yref: "paper", y0: 0, y1: 1, line: { color: INK, width: 2 } }];
   Plotly.newPlot(el, [
-    { type: "heatmap", x: s.dates, y: s.names, z: s.pct_both, zmin: 0, zmax: 100,
+    { type: "heatmap", x: s.dates, y: s.names.map(short), z: s.pct_both, zmin: 0, zmax: 100,
       colorscale: [[0, "#0B0D17"], [0.3, "#2E2826"], [0.6, "#B9803F"], [0.85, SUN], [1, "#FFE9C2"]],
       colorbar: { title: { text: "Sun + link %", side: "right" }, thickness: 10, tickfont: { color: DIM } },
       hovertemplate: "%{y}<br>land %{x|%-d %b %Y}<br>Sun + link %{z:.0f}%<extra></extra>" },
     { x: fails.x, y: fails.y, mode: "markers", marker: { symbol: "circle", size: 3, color: ALARM, opacity: 0.55 },
       hovertemplate: "%{y}, %{x|%-d %b}: battery runs flat<extra></extra>" },
-  ], base({ margin: { l: 190, r: 16, t: 16, b: 44 }, yaxis: { ...axis, autorange: "reversed" }, xaxis: { ...axis, tickformat: "%-d %b" },
+  ], base({ margin: { l: 12, r: 16, t: 16, b: 44 }, yaxis: { ...axis, autorange: "reversed", automargin: true, tickfont: { ...axis.tickfont, family: FONT.family, size: 11 } }, xaxis: { ...axis, tickformat: "%-d %b" },
     shapes: shape(new Date(Date.parse(s.planned) + s.slip_days * 864e5).toISOString()) }), cfg);
   document.addEventListener("slip", (e) => Plotly.relayout(el, { shapes: shape(new Date(e.detail).toISOString()) }));
 }

@@ -4,9 +4,10 @@ NASA Space Apps 2026. At the Moon's south pole the Sun never climbs: it circles 
 
 - **Story site:** https://anish-185.github.io/lunar-landing-site-navigator/ (scroll-driven, built on the same data)
 - **Mission console:** the Streamlit app in `app/` (deploy steps below)
+- **Design:** art direction, research, critique and jury scores in [`docs/design/`](docs/design/)
 - **Method and known limits:** [`docs/METHOD.md`](docs/METHOD.md) · **Decisions log:** [`docs/DECISIONS.md`](docs/DECISIONS.md) · **Credits:** [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md)
 
-![Site page](docs/screenshots/app_site_desktop.webp)
+![Be the Sun: the LOLA polar cap relit live with cast shadows from a 1.5° Sun](docs/screenshots/story_pole_70_desktop.webp)
 
 ## What it does
 
@@ -64,6 +65,7 @@ All pages and story chapters, desktop and mobile: [`docs/screenshots/`](docs/scr
 
 | | |
 | --- | --- |
+| ![Story: opening](docs/screenshots/story_origin_80_desktop.webp) | ![Mission console: Site page](docs/screenshots/app_site_desktop.webp) |
 | ![Slip Replanner](docs/screenshots/app_replan_desktop.webp) | ![Athena replay](docs/screenshots/app_athena_desktop.webp) |
 | ![Story: the Sun circles](docs/screenshots/story_sun_35_desktop.webp) | ![Story: small moves](docs/screenshots/story_ridge_50_desktop.webp) |
 
