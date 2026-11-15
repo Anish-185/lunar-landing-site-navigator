@@ -51,3 +51,4 @@ One line each: decision + why. Written during the autonomous run of Phases 4–9
 - Submission: video and deck use "Team: Anish G" (README lists no separate team name).
 - Submission: deck is HTML (site/demo_src/slides.html) printed to PDF by Playwright; no new dependency. FFmpeg is used as a system tool only, the output video is published, FFmpeg itself is not.
 - Submission: demo fonts copied into site/public/demo/fonts/ (OFL, already credited) so the static demo page makes no third-party requests.
+- Submission: fixed "Open full screen" (never opened: the smooth-scroll handler was bound at load to every a[href^="#"], including the console link before its href was set). Now one delegated handler checks the href at click time. Checked by site/scripts_verify_live.mjs.

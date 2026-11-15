@@ -32,8 +32,14 @@ const [data, config] = await Promise.all([
 // --- smooth scroll ---
 if (!reduced) {
   const lenis = new Lenis({ autoRaf: true, lerp: 0.09 });
-  document.querySelectorAll('a[href^="#"]').forEach((a) =>
-    a.addEventListener("click", (e) => { e.preventDefault(); lenis.scrollTo(a.getAttribute("href"), { offset: 0 }); }));
+  // Delegated and read at click time: links whose href is set later (the console's "Open full screen" starts as "#") must not be trapped.
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest?.('a[href^="#"]');
+    if (!a) return;
+    e.preventDefault();
+    const href = a.getAttribute("href");
+    if (href.length > 1) lenis.scrollTo(href, { offset: 0 });
+  });
 }
 
 // --- chapter rail ---
