@@ -18,15 +18,22 @@ st.markdown("<p class='g-lede'>Four candidates, same lander, same mission length
             "highlighted in gold.</p>", unsafe_allow_html=True)
 
 options = [s for s in ui._site_options() if s != ui.CUSTOM]
+if st.button("Equator vs pole", icon=":material/school:", help="Apollo 11 against the Shackleton rim, same dates."):
+    st.session_state.update({"cmp_site_0": "apollo_11", "cmp_site_1": "change_7_target", "cmp_on_0": True,
+                             "cmp_on_1": True, "cmp_on_2": False, "cmp_on_3": False})
+    st.rerun()
 first = sc["site_id"] if sc["site_id"] in options else ui.DEFAULT_SITE
 defaults = [first] + [s for s in ("change_7_target", "artemis_nobile_rim_2", "artemis_haworth",
                                   "artemis_mons_mouton_plateau") if s != first][:3]
+for i in range(4):
+    st.session_state.setdefault(f"cmp_on_{i}", True)
+    st.session_state.setdefault(f"cmp_site_{i}", defaults[i])
 cols = st.columns(4)
 picks = []
 for i, c in enumerate(cols):
     with c:
-        on = st.checkbox(f"Scenario {i + 1}", value=True, key=f"cmp_on_{i}")
-        sid = st.selectbox("Site", options, index=options.index(defaults[i]), format_func=ui._site_label,
+        on = st.checkbox(f"Scenario {i + 1}", key=f"cmp_on_{i}")
+        sid = st.selectbox("Site", options, format_func=ui._site_label,
                            key=f"cmp_site_{i}", label_visibility="collapsed", disabled=not on)
         d = st.date_input("Landing date (UTC)", value=sc["start"].date(), key=f"cmp_date_{i}", disabled=not on,
                           min_value=dt.date(2023, 1, 1), max_value=dt.date(2035, 12, 31))
@@ -62,6 +69,23 @@ surv = " ".join(f"{'✓' if s else '✗'} {lab}: battery {'survives' if s else '
 st.caption(f"Lower is better for nights, blackouts and eclipses. {surv}")
 st.plotly_chart(plots.compare_bars(df), config=plots.CONFIG, key="cmp_bars")
 st.caption("Share of the mission with sunlight (gold), a usable link to Earth (blue) and both at once (white).")
+with st.expander("Why is the pole so strange?"):
+    st.markdown("""
+At Apollo 11, near the equator, the Sun climbs high, crosses the sky and sets: about two weeks of day, two weeks of
+night, like clockwork. Earth hangs almost still, high in the west, because the Moon keeps one face to us.
+
+At the south pole the Sun never climbs. The Moon's axis is tilted only 1.5° to the Sun, so the Sun **circles the
+horizon** once a month, never more than a degree or two up. A ridge 30 km away can hide it for days; a peak a few
+hundred metres higher can keep it in view for weeks. That is why sites only a few hundred metres apart can differ
+by tens of percent in sunlight, and why Gnomon names the ridge to blame.
+
+Earth does something stranger: it **bobs up and down** by several degrees over a month as the Moon wobbles
+(libration). Near the pole that is enough to drop Earth behind the terrain for days, cutting the radio link,
+and when it is just above the horizon the signal bounces off the ground (multipath).
+
+Press **Equator vs pole** above to see both at once.
+""")
+
 with st.expander("Why each scenario scores the way it does"):
     for _, r in df.iterrows():
         st.markdown(f"**{r['label']}**")

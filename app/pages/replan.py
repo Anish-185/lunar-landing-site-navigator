@@ -61,7 +61,7 @@ cards = [("After the slip", "rocket", plots.TERRAIN, orig, now, None),
 cols = st.columns(4)
 for col, (title, ic, accent, row, summ, _) in zip(cols, cards):
     summ = summ or _explain(row["site_id"], row["date"], sc["lander_key"], sc["days"])
-    rating = "good" if summ["survives"] and summ["pct_both"] >= 60 else "caution" if summ["survives"] else "bad"
+    rating = ("bad" if not summ["survives"] or summ["pct_both"] < 25 else "good" if summ["pct_both"] >= 60 else "caution")
     changed = [] if title == "After the slip" else ["What changed: " + ", ".join(replan.what_changed(now, summ)) + "."]
     col.markdown(ui.card(title, ic, accent, rating, f"{summ['pct_both']:.0f}", "% Sun and link",
                          [f"{row['name']}, land {row['date']:%-d %b %Y %H:%M} UTC.",

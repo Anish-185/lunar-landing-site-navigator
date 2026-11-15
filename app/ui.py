@@ -71,7 +71,7 @@ def _load_query_params() -> None:
     ss.setdefault("date", t.date())
     ss.setdefault("time", t.time().replace(second=0, microsecond=0))
     num = lambda k, d, lo, hi: float(np.clip(float(qp.get(k, d)), lo, hi)) if _is_num(qp.get(k, d)) else d
-    ss.setdefault("days", int(num("days", 14, 1, 60)))
+    ss.setdefault("days", int(num("days", 7, 1, 60)))  # about a crewed surface stay
     ss.setdefault("mast", num("mast", 2.0, 1.0, 20.0))
     ss.setdefault("lat", num("lat", -89.45, -90.0, -80.0))
     ss.setdefault("lon", num("lon", -137.3, -180.0, 180.0))

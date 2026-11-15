@@ -25,3 +25,10 @@ One line each: decision + why. Written during the autonomous run of Phases 4–9
 - Phase 7: crater shadow in the Athena story uses an illustrative depth/diameter of 0.1–0.2, labelled as such. Why: no DEM resolves the crater; the geometry still shows why the floor was dark at a 2.5° Sun.
 - Phase 7: Replanner Plan B only looks at dates on or after the slipped landing. Why: a slipped launch cannot land earlier.
 - Phase 7: blame-the-ridge uses a selectbox of every dark period plus a click on the timeline (not only the click). Why: keyboard accessible, and Plotly point clicks on a line are fiddly.
+- Phase 8: story-site Big Bang uses three.js points (no tsParticles). Why: three.js is already loaded for the Moon and Earth; one library instead of two.
+- Phase 8: the story site reads the app URL from `site/public/config.json` (`appUrl`) at runtime. Why: the user fills it in after deploying Streamlit without touching code; a push redeploys Pages.
+- Phase 8: default mission length 7 days (app and the story's slip scenario). Why: about a crewed surface stay; a 14-day default made the illustrative battery fail for reasons unrelated to the site, which hid the slip story.
+- Phase 8: Plan B / slip cards rate "No-go" when Sun-and-link < 25 % even if the battery survives. Why: a lander that survives in the dark with no link has not achieved anything.
+- Phase 8: the Sun panorama clips peaks above 11° with a fade at the top. Why: a 15° near rim squashed the 2° Sun path into a line; the caption says peaks are cut off.
+- Phase 8: on phones the Sun panorama is a 1100 px strip that pans to follow the Sun. Why: 360° in 390 px is unreadable.
+- Phase 8: ridge map 0 % cells are described as "pits that never see the Sun". Why: they are NASA's real 0 % cells (21 of 961 in the crop), isolated, so "flanks" would overstate.

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gnomon | Lunar Landing Site Navigator</title>
+  <meta name="description" content="At the Moon's south pole the Sun circles the horizon and Earth plays hide and seek. Gnomon tells you which ridge will steal your light, and where to land instead." />
+  <meta name="theme-color" content="#04050F" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="preload" href="./data/story.json" as="fetch" crossorigin />
+</head>
+<body>
+  <a class="skip" href="#console">Skip to the mission console</a>
+
+  <header class="bar">
+    <a class="wordmark" href="#top" aria-label="Gnomon, back to the top">Gnomon</a>
+    <nav aria-label="Chapters" class="rail" id="rail"></nav>
+    <a class="bar-cta" href="#console">Open the console</a>
+  </header>
+
+  <canvas id="cosmos" aria-hidden="true"></canvas>
+
+  <main id="top">
+    <!-- 1. Big Bang -> stars -> Earth-Moon -->
+    <section class="chapter hero" id="origin" data-title="Origin" style="--len: 320vh">
+      <div class="sticky">
+        <div class="hero-copy beat" data-at="0" data-until="0.28">
+          <h1 class="title">Gnomon</h1>
+          <p class="subtitle">Lunar Landing Site Navigator</p>
+          <p class="lede">Every landing at the Moon's south pole is a bet on light. We do the maths before you place it.</p>
+          <p class="cue"><span class="cue-line"></span>Scroll to start the universe</p>
+        </div>
+        <p class="beat big-line" data-at="0.3" data-until="0.58">13.8 billion years of physics, and the Sun still won't climb two degrees over the place we want to land.</p>
+        <p class="beat big-line low" data-at="0.62" data-until="0.97">Meet the system. One Moon, its axis tilted a mere 1.5°. One Earth, nodding at it every month.</p>
+      </div>
+    </section>
+
+    <!-- 2. Zoom into the south pole -->
+    <section class="chapter pole" id="pole" data-title="South pole" style="--len: 260vh">
+      <div class="sticky">
+        <div class="layer layer-nebula" aria-hidden="true"></div>
+        <div class="layer layer-stars" aria-hidden="true"></div>
+        <figure class="layer layer-terrain" id="terrain">
+          <img src="./media/pole_hillshade.webp" alt="Shaded relief of the lunar south pole from 80° south to the pole, from NASA's LOLA elevation data" width="1400" height="1400" loading="lazy" decoding="async" />
+          <div class="markers" id="pole-markers"></div>
+        </figure>
+        <div class="pole-copy beat" data-at="0.3" data-until="1.1">
+          <h2 class="h2">Fly south.</h2>
+          <p class="body">Below 80° the ground is lit by a Sun that never climbs. Shadows run for kilometres; craters hold night that has lasted billions of years. This relief is NASA's LOLA laser altimetry, lit the way the pole is lit: from 8° above the horizon.</p>
+          <p class="body dim">Gold diamonds are candidate landing sites: the nine Artemis III regions and the landers that went before.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. The Sun circles -->
+    <section class="chapter sun" id="sun" data-title="The Sun circles" style="--len: 330vh">
+      <div class="sticky">
+        <div class="copy-col">
+          <h2 class="h2">Here the Sun doesn't rise. It circles.</h2>
+          <p class="body" id="sun-lede"></p>
+        </div>
+        <figure class="panorama" aria-describedby="sun-cap">
+          <div class="pan-scroll" id="pan-scroll"><svg id="sun-svg" viewBox="0 0 1440 420" preserveAspectRatio="none" role="img" aria-label="The Sun's path around the full horizon over January 2027, above the terrain skyline"></svg></div>
+          <div class="readout" id="sun-readout" aria-live="polite"></div>
+          <figcaption id="sun-cap" class="cap">Every compass direction across, elevation up (stretched ×20 so a 2° Sun is visible). Grey is the real skyline from 20 m and 80 m LOLA terrain; labels name the ridge in each direction and its distance. Gold is the Sun's real path, January 2027, SPICE DE440.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 4. Earth hide and seek -->
+    <section class="chapter earth" id="earth" data-title="Earth hides">
+      <div class="split">
+        <div class="copy-col">
+          <h2 class="h2">Earth plays hide and seek.</h2>
+          <p class="body" id="earth-lede"></p>
+          <p class="body dim">Every byte home goes straight to Earth: Artemis III assumes no relay. When Earth hangs a degree or two over the terrain, the signal bounces off the ground on the way out (multipath), and the link fades.</p>
+        </div>
+        <figure class="chart-fig"><div class="chart" id="earth-chart" role="img" aria-label="Earth's elevation over January 2027 against the terrain horizon in Earth's direction"></div>
+          <figcaption class="cap">Earth's elevation (blue, red while hidden) against the terrain in its direction (grey). De Gerlache Rim 2, January 2027, hourly from SPICE.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- 5. Small moves -->
+    <section class="chapter ridge" id="ridge" data-title="Small moves">
+      <div class="split reverse">
+        <figure class="chart-fig"><div class="chart square" id="ridge-chart" role="img" aria-label="NASA's long-run sunlight map around the Blue Moon MK1 ridge site"></div>
+          <figcaption class="cap">NASA's own map (PGDA product 69, 60 m cells): share of 18.6 years with any sunlight. Circle: 420 m around the Blue Moon MK1 target on the Shackleton connecting ridge.</figcaption></figure>
+        <div class="copy-col">
+          <h2 class="h2">Small moves, big consequences.</h2>
+          <div class="duo" id="ridge-duo"></div>
+          <p class="body" id="ridge-lede"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Athena -->
+    <section class="chapter athena" id="athena" data-title="Athena">
+      <div class="split">
+        <div class="copy-col">
+          <h2 class="h2">250 metres decided Athena's fate.</h2>
+          <ol class="beats" id="athena-beats"></ol>
+        </div>
+        <figure class="chart-fig"><div class="chart square" id="athena-chart" role="img" aria-label="Athena's target and resting spot over 20 metre lunar terrain"></div>
+          <figcaption class="cap" id="athena-cap"></figcaption></figure>
+      </div>
+    </section>
+
+    <!-- 7. Slip -->
+    <section class="chapter slip" id="slip" data-title="The slip">
+      <div class="wide">
+        <h2 class="h2">Your launch just slipped six weeks.</h2>
+        <p class="body" id="slip-lede"></p>
+        <div class="slip-ctl">
+          <label for="slip-range">Launch slip</label>
+          <input type="range" id="slip-range" min="0" max="90" step="1" value="42" />
+          <output id="slip-out" for="slip-range">42 days</output>
+        </div>
+        <div class="slip-cards" id="slip-cards" aria-live="polite"></div>
+        <figure class="chart-fig"><div class="chart tall" id="slip-chart" role="img" aria-label="Share of a week-long mission with Sun and a link to Earth, for every candidate site and landing date"></div>
+          <figcaption class="cap">Rows: candidate sites. Across: landing dates. Brighter: more of a week on the surface with both sunlight and a link to Earth. Red dots: the battery runs flat on that plan (a week of polar night beats most batteries). White line: where your slipped launch lands you.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- 8. Console -->
+    <section class="chapter console" id="console" data-title="Console">
+      <div class="wide">
+        <h2 class="h2">Mission console.</h2>
+        <p class="body">Every number above, live, for any site, any date, any lander. Pick a spot and Gnomon tells you how long the lights stay on, when Earth drops out, and which ridge to blame.</p>
+        <div class="console-frame" id="console-frame"></div>
+        <p class="console-actions"><a class="btn" id="console-open" href="#" target="_blank" rel="noopener">Open full screen</a></p>
+      </div>
+    </section>
+
+    <!-- 9. Evidence + credits -->
+    <section class="chapter evidence" id="evidence" data-title="Evidence">
+      <div class="wide">
+        <h2 class="h2">Checked against NASA.</h2>
+        <div class="proofs" id="proofs"></div>
+        <div class="hindcast" id="hindcast"></div>
+        <div class="credits">
+          <h3 class="h3">Built on</h3>
+          <p class="body dim">Data: NASA LOLA (PGDA products 90 and 69: Barker et al. 2023, Mazarico et al. 2011), NAIF SPICE DE440 and the lunar PCK, JPL Horizons, the USGS Gazetteer of Planetary Nomenclature, LROC. Code: NASA-AMMOS MMGIS Sightline (Apache-2.0), SpiceyPy, Skyfield, Streamlit, Plotly, three.js, Lenis, Motion. Images: NASA SVS CGI Moon Kit and Blue Marble; Hubble's Carina Nebula (NASA, ESA, M. Livio and the Hubble 20th Anniversary Team, STScI). Fonts: Fraunces and Hanken Grotesk (SIL OFL); icons: Lucide (ISC).</p>
+          <p class="body dim">Every source, license and borrowed idea is listed in <a href="https://github.com/Anish-185/lunar-landing-site-navigator/blob/main/ATTRIBUTIONS.md">ATTRIBUTIONS.md</a>; the method and its limits in <a href="https://github.com/Anish-185/lunar-landing-site-navigator/blob/main/docs/METHOD.md">METHOD.md</a>. NASA Space Apps 2026. Code Apache-2.0. Written with Claude Code; reviewed and tested by the team.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <noscript><p class="noscript">This page draws real NASA data with JavaScript. The full method is on <a href="https://github.com/Anish-185/lunar-landing-site-navigator">GitHub</a>.</p></noscript>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

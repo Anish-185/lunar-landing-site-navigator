@@ -152,9 +152,44 @@ if not site.custom and site.lat <= -80:
                    "share of the mission with both Sun and a link. Gold joins the best trade-offs: nothing is both "
                    "closer to the shadow and better lit.")
 
-if sc["expert"]:
-    cols = ["utc", "sun_az", "sun_el", "sun_h", "sun_clear", "sun_frac", "eclipse", "eff_sun", "earth_az", "earth_el",
-            "earth_h", "earth_clear", "band", "dsn", "link", "power_W", "soc"]
-    st.download_button("Download the hourly series (CSV)", tl[cols].to_csv(index=False).encode(),
-                       file_name=f"gnomon_{site.id}_{sc['start']:%Y%m%dT%H%M}Z.csv", mime="text/csv",
+
+# --- decision brief ---
+st.markdown("### Take it to the review")
+b1, b2 = st.columns([1, 2])
+if b1.button("Prepare the decision brief", icon=":material/description:"):
+    from navigator import brief, replan
+
+    with st.spinner("Writing the brief..."):
+        pb_rows = []
+        if site.id in replan.candidate_sites():
+            grid = replan.grid(replan.candidate_sites(), sc["start"], sc["lander"], sc["days"], span_days=30)
+            pb = replan.plan_b(grid, site.id, sc["start"])
+            for key, title in (("other_site", "Another site, same day"), ("same_site", "Same site, later day"),
+                               ("best", "Best within 30 days")):
+                r = pb[key]
+                alt = replan.explain(r["site_id"], r["date"], sc["lander"], sc["days"])
+                pb_rows.append({"title": title, "site": r["name"], "date": f"{r['date']:%-d %b %Y %H:%M}",
+                                "pct_both": alt["pct_both"], "changed": ", ".join(replan.what_changed(summ, alt))})
+        html_doc = brief.render(
+            {"name": site.name, "lat": site.lat, "lon": site.lon, "start": sc["start"], "days": sc["days"],
+             "mast": sc["mast"], "lander": sc["lander"]["name"], "horizon_source": site.horizon_source},
+            summ, verdict, light, o, pb_rows,
+            [plots.timeline(tl).to_html(full_html=False, include_plotlyjs="cdn")],
+            ["Sunlit = any part of the Sun's disc above the terrain (NASA AVGVISIB definition).",
+             "Link usable = Earth ≥ 2° above the terrain and a DSN complex sees the Moon ≥ 10° (thresholds are ours).",
+             "Battery: single bucket, starts full, must stay above 20%. Lander numbers are illustrative unless cited.",
+             "Slope limit 10° (NASA Artemis III landing requirement, 100 m baseline); our slope is 20 m LOLA.",
+             "Terrain: LOLA 20 m near field + 80 m far field; craters smaller than ~40 m are not resolved."],
+            ["LOLA DEMs, PGDA product 90 (Barker et al. 2023)", "LOLA illumination maps, PGDA product 69 "
+             "(Mazarico et al. 2011)", "NAIF SPICE DE440 and lunar PCK", "NASA-AMMOS MMGIS Sightline (Apache-2.0)",
+             "USGS Gazetteer of Planetary Nomenclature", "NASA Artemis III landing requirements (NTRS 20250009323)"])
+        st.session_state["brief_html"] = html_doc
+if "brief_html" in st.session_state:
+    b1.download_button("Download the brief (HTML)", st.session_state["brief_html"].encode(),
+                       file_name=f"gnomon_brief_{site.id}_{sc['start']:%Y%m%d}.html", mime="text/html",
                        icon=":material/download:")
+b1.download_button("Download the hourly series (CSV)", tl.drop(columns=["sun_occ", "earth_occ"]).to_csv(index=False).encode(),
+                   file_name=f"gnomon_{site.id}_{sc['start']:%Y%m%dT%H%M}Z.csv", mime="text/csv",
+                   icon=":material/table:", key="csv_all")
+b2.caption("The brief is one HTML page: verdicts with reasons, landing-zone odds, Plan B, assumptions and sources. "
+           "Open it and print to PDF. The CSV has every hourly number behind this page.")

@@ -41,3 +41,14 @@ def test_custom_site_is_labelled_coarser():
     at = _run(APP / "pages" / "site.py", site="custom", lat="-89.45", lon="-137.3")
     assert not at.exception
     assert any("Coarser terrain (160 m)" in m.value for m in [*at.markdown, *at.caption])
+
+
+def test_decision_brief_and_equator_vs_pole():
+    at = _run(APP / "pages" / "site.py")
+    at.button[[b.label for b in at.button].index("Prepare the decision brief")].click().run()
+    assert not at.exception
+    doc = at.session_state["brief_html"]
+    assert doc.startswith("<!doctype html>") and "Verdict" in doc and "Plan B" in doc and "Sources" in doc
+    cmp_ = _run(APP / "pages" / "compare.py")
+    cmp_.button[0].click().run()
+    assert not cmp_.exception and cmp_.session_state["cmp_site_0"] == "apollo_11"
