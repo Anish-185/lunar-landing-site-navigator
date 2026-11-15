@@ -92,7 +92,9 @@ Pulled in by the pipeline packages above (mostly GDAL, GeoPandas, Shapely) and i
 
 ## Research and mission references
 
-- NASA, Artemis HLS overview for Space Apps 2025 (landing criteria): https://ntrs.nasa.gov/api/citations/20250009323/downloads/ArtemisOverview2025IntSPAPPSChallenge.pdf
+- NASA, Artemis HLS overview for Space Apps 2025 (landing criteria, slide "Key Artemis III Landing Requirements": slope < 10° over 100 m, direct-with-Earth comms, surface and approach lighting, land within 100 m): https://ntrs.nasa.gov/api/citations/20250009323/downloads/ArtemisOverview2025IntSPAPPSChallenge.pdf
+- M. Sanchez Net, antenna separation for multipath diversity on lunar south pole direct-to-Earth links, JPL IPN Progress Report 42-243 (2025), cited for low-elevation multipath fades: https://ipnpr.jpl.nasa.gov/progress_report/42-243/42-243A.pdf
+- JPL LRO–DSN multipath measurement campaign near the lunar south pole, IPN Progress Reports 42-222 (2020) and 42-226 (2021): https://ipnpr.jpl.nasa.gov/progress_report/42-222/42-222C.html, https://ipnpr.jpl.nasa.gov/progress_report/42-226/42-226D.html
 - Other references are listed in `docs/plan/competitive-analysis.md` and added here as features use them.
 
 ## AI assistance

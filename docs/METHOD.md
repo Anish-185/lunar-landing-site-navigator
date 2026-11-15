@@ -2,7 +2,7 @@
 
 Kept up to date with the code (CLAUDE.md rule 7). Each section gives what we compute, which library or NASA product does it, and what it does not model.
 
-Status: Phase 4 (incremental build on top of Phase 3's terrain horizons, occluders, landing ellipses, PSRs and AVGVISIB validation). Sections marked *planned* describe the intended method; they are rewritten when the code lands.
+Status: Phase 5 (engine: visibility, eclipses, events, comms, power, scores, landing light and landing-zone odds), on top of the Phase 3–4 terrain and build. Sections marked *planned* describe the intended method; they are rewritten when the code lands.
 
 ## Conventions
 
@@ -107,9 +107,21 @@ PGDA product 69's AVGVISIB maps give, per pixel, the fraction of hourly timestep
 
 `make derived` runs `pipeline/build_all.py`, which is incremental. Each step declares its inputs: the source code of the functions it runs (via `inspect.getsource`, so editing an unrelated function in the same module does not trigger it), the config files (`sites.yaml`, `landers.yaml`) and the data files it reads. A step is skipped when that fingerprint matches its last successful run (stored in `data/derived/.build_state.json`, gitignored) and its outputs exist. Files under 64 MB are fingerprinted by SHA-256 of their content, bigger ones (raw DEMs) by size + mtime. `make derived FORCE=1` rebuilds everything; `python -m pipeline.build_all --list` shows which steps are dirty, `--only STEP` runs one step. A no-change run takes ~1 s; the 28-minute ellipse step reruns only when its code, the site/lander config, the 20 m windows, the 80 m DEM, the PSR shapefile or the feature names change. `tests/test_derived_outputs.py` smoke-checks every committed output.
 
-## Visibility, events, comms, power, landing (*planned*, Phases 5–7)
+## Engine (Phase 5)
 
-To be written with the code.
+All in `navigator/`, pure NumPy/pandas, hourly samples. `engine.timeline(site, start, days, mast, lander)` builds one table per scenario; the other modules are small functions over it.
+
+- **Horizon at the body** (`visibility.horizon_at`): periodic linear interpolation of the 720-azimuth horizon at the Sun's/Earth's azimuth. Mast heights between the computed ones (1, 2, 5, 10, 15, 20 m) are interpolated linearly. Clearance = disc-centre elevation − horizon.
+- **Visible disc fraction** (`visibility.disc_fraction`): the circle-segment area above a locally straight horizon, f = 1 − (acos c − c√(1−c²))/π with c = clearance / angular radius. "Sunlit" means any part of the disc is visible (f > 0), the same definition as NASA's AVGVISIB maps.
+- **Eclipses** (`eclipse.py`): the fraction of the Sun's disc covered by Earth's (two-circle intersection, flat small-angle geometry) at the Sun–Earth separation seen from the site. Effective sun = disc fraction × (1 − eclipse fraction). Check: the total lunar eclipse of 14 Mar 2025 (the one Blue Ghost 1 filmed) shows as 100% cover at the IM-2 site, peaking 14 Mar ~06:00 UTC.
+- **Events** (`events.py`): rises/sets from sign changes of clearance, refined by linear interpolation between hourly samples (error ~ minutes); continuous windows, longest night, longest comms blackout.
+- **Countdown uncertainty**: the horizon is shifted by ±σ_h = atan(σ_z / d), d = distance to the occluder at the body's azimuth, and the earliest/latest crossing is reported. σ_z is the 95th percentile of the LOLA 20 m height-error map over the site's landing ellipse (0.2–1 m at catalog sites). Limitation: that error is near the site, not at the occluder; custom sites use an illustrative 10 m (160 m DEM smoothing), catalog sites without a tile an illustrative 1 m.
+- **Comm quality** (`comms.py`): Earth clearance bands **good ≥ 5°, marginal 2–5°, poor 0–2°, none < 0** — our assumption, user-editable, not a link budget. Rationale: south-pole direct-to-Earth links run at low elevation, where reflections off the lunar surface cause multipath fades of more than 20 dB (JPL IPN Progress Report 42-243, Sanchez Net 2025; LRO–DSN multipath measurements in IPN PR 42-222 and 42-226). DSN: Moon elevation at Goldstone, Madrid and Canberra with Skyfield and the shipped DE440s kernel (no network); a complex counts at ≥ 10°. **Link usable = band marginal or better AND at least one complex in view.** NASA's Artemis III requirements assume direct-with-Earth communication with no relay.
+- **Power** (`power.py`): array output = array_W × cos(sun el) (vertical, sun-tracking panel) or sin(sun el) (horizontal) × effective sun. Battery: forward Euler over the hourly samples, clipped to [0, capacity], starting full; survives if it never goes below 20%. All lander numbers are illustrative unless `landers.yaml` cites a source.
+- **Scores** (`scores.py`): % sunlit, % link, % both, longest night and blackout, battery survival, eclipses, and plain-English reasons. A dark period is blamed on terrain when the horizon at the body's azimuth is above 0.05° (otherwise "below the horizon"), using the occluder's name, distance and azimuth from Phase 3, e.g. "Sun blocked by the rim of Shackleton, 21 km away at az 212° from 4 Mar 05:00 UTC". For a comms blackout with Earth visible, the reason is low clearance (multipath) or no DSN complex.
+- **Landing light** (`landing.landing_light`): Sun elevation and azimuth at touchdown; angle to the approach heading (default 180°, descent along the local meridian toward the pole); "sun in camera" when within 30° of the heading and below 10° elevation; **% of the landing zone in shadow = share of the site's 200 ellipse points whose own horizon at the Sun's azimuth is above the Sun's elevation**; shadow length of a 1 m boulder = 1/tan(el). Rating: bad if the Sun is down or ≥ 50% of the zone is shadowed; caution if sun in camera, ≥ 10% shadowed or the Sun below 1°; good otherwise (thresholds illustrative). Pure NumPy, any time, no GDAL. NASA lists approach lighting and surface lighting among the Artemis III landing requirements.
+- **Landing-zone odds** (`landing.ellipse_odds`): the mission is run at each of the 200 precomputed ellipse points with its own horizon (Sun/Earth directions from the site; they change by < 0.01° over 100 m). Pass criteria per point: **slope ≤ 10°** (NASA, "Key Artemis III Landing Requirements": "Surface slope for landing (100m): <10 deg"; our slope is the 20 m LDSM at the point, a shorter baseline than 100 m, so it is conservative); battery stays above 20%; link usable ≥ 50% of the mission (illustrative); Sun visible at touchdown. P(success) = share of points passing all four.
+
 
 ## Known limits
 
@@ -121,4 +133,7 @@ To be written with the code.
 - Terrain coverage ends at 80°S (the edge of the PGDA 90 mosaics). Horizons for sites near that edge miss terrain beyond it.
 - Artemis region coordinates are centres measured from NASA's map (a few km uncertainty), and the Blue Moon MK1 and Chang'e-7 targets are unofficial; lander presets are illustrative unless a source is cited.
 - Elevations are above the smooth 1737.4 km sphere: no terrain yet (Phase 3), no refraction (there is no atmosphere). The observer is at height 0 unless a mast height is given.
-- Comm-quality thresholds are assumptions (user-editable), not a link budget.
+- Comm-quality thresholds are assumptions (user-editable), not a link budget: no antenna patterns, no fading statistics, no data rates.
+- Hourly sampling: events are interpolated between samples (minutes of error); a Sun or Earth glimpse shorter than an hour can be missed.
+- Ellipse points use the site's Sun/Earth directions and the 20 m slope (a 20 m baseline, not NASA's 100 m), and a 2 m deck height.
+- The battery model is a single bucket (no temperature, no degradation, no heater loads during the night beyond `load_W`).
