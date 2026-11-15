@@ -47,3 +47,7 @@ One line each: decision + why. Written during the autonomous run of Phases 4–9
 - Design v2: reference screenshots (docs/design/refs/) gitignored. Why: they are other people's work, studied for design language only.
 - Design v2: loader capped at 1.4 s, click/key skips it, and a CSS failsafe hides it after 3 s even if the script fails. Why: usability is 30 % of the score and loaders that gate content lose it.
 - Design v2: merged into main. Why: jury v1 6.42 → v2 7.84 ("clearly better side by side"), make test passes (227), Lighthouse desktop 99/100/100/100. Firefox/WebKit heading crops not verified (Playwright's browser download hung and was stopped).
+- Submission: demo video built from 1920x1080 stills of the LIVE story site and console (Playwright, software WebGL) blended to 30 fps with ffmpeg, not a live screen recording. Why: deterministic and smooth; headless software WebGL records janky video.
+- Submission: video and deck use "Team: Anish G" (README lists no separate team name).
+- Submission: deck is HTML (site/demo_src/slides.html) printed to PDF by Playwright; no new dependency. FFmpeg is used as a system tool only, the output video is published, FFmpeg itself is not.
+- Submission: demo fonts copied into site/public/demo/fonts/ (OFL, already credited) so the static demo page makes no third-party requests.

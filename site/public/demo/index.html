@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gnomon demo</title>
+  <meta name="description" content="30-second demo video and 7-slide deck of Gnomon, the Lunar Landing Site Navigator (NASA Space Apps 2026)." />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <meta property="og:title" content="Gnomon demo: 30 seconds at the lunar south pole" />
+  <meta property="og:image" content="https://anish-185.github.io/lunar-landing-site-navigator/og.jpg" />
+  <style>
+    @font-face { font-family: "Instrument Serif"; src: url("fonts/instrument-serif-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+    @font-face { font-family: "Instrument Serif"; font-style: italic; src: url("fonts/instrument-serif-latin-400-italic.woff2") format("woff2"); font-display: swap; }
+    @font-face { font-family: "Geist"; font-weight: 100 900; src: url("fonts/geist-latin-wght-normal.woff2") format("woff2"); font-display: swap; }
+    @font-face { font-family: "Geist Mono"; font-weight: 100 900; src: url("fonts/geist-mono-latin-wght-normal.woff2") format("woff2"); font-display: swap; }
+    :root { --space: #05060B; --edge: rgba(232,228,216,.12); --ink: #EDEAE2; --dim: #A3A09A; --sun: #F4B860; --sun-hot: #FFE9C2; --earth: #6FB1FF; color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html { background: var(--space); }
+    body { margin: 0; min-height: 100vh; color: var(--ink); font: 400 1.0625rem/1.6 "Geist", system-ui, sans-serif;
+      background: radial-gradient(900px 520px at 85% -10%, rgba(244,184,96,.12), transparent 60%), var(--space); }
+    main { max-width: 1120px; margin: 0 auto; padding: clamp(32px, 6vw, 72px) 16px 64px; }
+    .kicker { font-family: "Geist Mono", monospace; font-size: .8125rem; letter-spacing: .12em; text-transform: uppercase; color: var(--sun); margin: 0 0 .75rem; }
+    h1 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.75rem); line-height: 1; margin: 0 0 .75rem; letter-spacing: -.01em; }
+    h1 em { color: var(--sun); }
+    .lede { color: var(--dim); max-width: 40rem; margin: 0 0 2rem; }
+    video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 14px; border: 1px solid var(--edge); box-shadow: 0 24px 70px rgba(0,0,0,.6); }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 1.5rem 0 2.5rem; }
+    .btn { display: inline-flex; align-items: center; gap: .5rem; padding: .7rem 1.1rem; border-radius: 999px; text-decoration: none; font-weight: 500;
+      border: 1px solid var(--edge); color: var(--ink); transition: border-color .2s, color .2s; }
+    .btn.primary { background: var(--sun); color: var(--space); border-color: var(--sun); }
+    .btn:hover { border-color: var(--sun); color: var(--sun-hot); }
+    .btn.primary:hover { color: var(--space); background: var(--sun-hot); }
+    a:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
+    .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; border-top: 1px solid var(--edge); padding-top: 1.5rem; }
+    .links p { margin: 0; font-size: .9375rem; }
+    .links span { display: block; font-family: "Geist Mono", monospace; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+    .links a { color: var(--earth); overflow-wrap: anywhere; text-underline-offset: 3px; }
+    footer { color: var(--dim); font-size: .8125rem; margin-top: 2.5rem; }
+    ::cue { font-family: "Geist", system-ui, sans-serif; background: rgba(5,6,11,.75); }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">NASA Space Apps Challenge 2026 · Demo</p>
+    <h1>Gnomon, in <em>30 seconds</em>.</h1>
+    <p class="lede">At the Moon's south pole the Sun doesn't rise; it circles a degree or two above the ridges. Gnomon tells you where the light lasts, when Earth drops out, which ridge is to blame, and what to do when the launch slips.</p>
+    <video id="demo" controls playsinline preload="metadata" poster="poster.jpg">
+      <source src="gnomon_demo.mp4" type="video/mp4" />
+      <track kind="subtitles" src="gnomon_demo.vtt" srclang="en" label="English" default />
+      Your browser can't play this video. <a href="gnomon_demo.mp4">Download the MP4</a>.
+    </video>
+    <div class="actions">
+      <a class="btn primary" href="gnomon_slides.pdf" target="_blank" rel="noopener">Open the 7-slide deck (PDF)</a>
+      <a class="btn" href="../">Story site</a>
+      <a class="btn" href="https://gnomon-moon.streamlit.app" target="_blank" rel="noopener">Mission console</a>
+    </div>
+    <div class="links">
+      <p><span>Story site</span><a href="https://anish-185.github.io/lunar-landing-site-navigator/">anish-185.github.io/lunar-landing-site-navigator</a></p>
+      <p><span>Mission console</span><a href="https://gnomon-moon.streamlit.app">gnomon-moon.streamlit.app</a></p>
+      <p><span>Source code</span><a href="https://github.com/Anish-185/lunar-landing-site-navigator">github.com/Anish-185/lunar-landing-site-navigator</a></p>
+    </div>
+    <footer>Team: Anish G. Subtitles are on by default (CC button to toggle). If the console shows Streamlit's sleep screen, click "Yes, get this app back up" and wait about 30 seconds. Video: screen captures of the live site and console; data from NASA LOLA, NAIF SPICE and JPL Horizons.</footer>
+  </main>
+  <script>
+    // Make sure the English track shows even where the browser ignores `default`.
+    const v = document.getElementById("demo");
+    const on = () => { for (const t of v.textTracks) t.mode = t.language === "en" ? "showing" : t.mode; };
+    v.textTracks.addEventListener?.("addtrack", on); v.addEventListener("loadedmetadata", on); on();
+  </script>
+</body>
+</html>

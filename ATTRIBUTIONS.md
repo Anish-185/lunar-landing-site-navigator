@@ -75,7 +75,8 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 | Plotly.js (`plotly.js-dist-min`) | MIT | Story charts | https://github.com/plotly/plotly.js |
 | Fontsource (font packaging) | MIT (fonts themselves OFL) | Self-hosted fonts | https://fontsource.org |
 | Vite | MIT | Build tool (dev only) | https://vite.dev |
-| Playwright | Apache-2.0 | Screenshots of the app and story site (dev only) | https://playwright.dev |
+| Playwright | Apache-2.0 | Screenshots of the app and story site; demo frame capture and the deck PDF (`site/scripts_demo_*.mjs`, dev only) | https://playwright.dev |
+| FFmpeg (system command-line tool, not a dependency; not distributed) | LGPL-2.1+/GPL-2.0+ (as built by the OS) | Joins the demo frames into `site/public/demo/gnomon_demo.mp4` and burns in subtitles (`site/scripts_demo_video.sh`); only the output video is published | https://ffmpeg.org |
 | Lighthouse (run once via `npx`, not a dependency) | Apache-2.0 | Performance and accessibility audit of the story site | https://github.com/GoogleChrome/lighthouse |
 
 ### Offline pipeline and tests only (`pipeline/environment.yml`, on top of the above)

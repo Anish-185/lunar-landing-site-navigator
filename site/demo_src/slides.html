@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gnomon: 7-slide deck</title>
+<!-- Source of site/public/demo/gnomon_slides.pdf. Printed by site/scripts_demo_pdf.mjs (Playwright). Images: our own screenshots in docs/screenshots. -->
+<style>
+@font-face { font-family: "Instrument Serif"; src: url("../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Instrument Serif"; font-style: italic; src: url("../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "Geist"; font-weight: 100 900; src: url("../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2") format("woff2"); }
+@font-face { font-family: "Geist Mono"; font-weight: 100 900; src: url("../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2") format("woff2"); }
+:root { --space: #05060B; --glass: rgba(14,16,28,.72); --edge: rgba(232,228,216,.12); --ink: #EDEAE2; --dim: #A3A09A;
+  --sun: #F4B860; --sun-hot: #FFE9C2; --earth: #6FB1FF; --alert: #FF5C5C; --go: #6ED6B0; }
+@page { size: 1920px 1080px; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--space); color: var(--ink); font-family: "Geist", system-ui, sans-serif; }
+.slide { width: 1920px; height: 1080px; position: relative; overflow: hidden; page-break-after: always; break-after: page;
+  background: radial-gradient(1200px 700px at 85% -10%, rgba(244,184,96,.10), transparent 60%), var(--space); padding: 96px 112px; }
+.slide:last-child { page-break-after: auto; break-after: auto; }
+.kicker { font-family: "Geist Mono", monospace; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; color: var(--sun); margin: 0 0 24px; }
+h1, h2 { font-family: "Instrument Serif", serif; font-weight: 400; margin: 0; letter-spacing: -.01em; line-height: 1.02; }
+h1 { font-size: 200px; }
+h2 { font-size: 92px; max-width: 1100px; }
+h2 em, h1 em { color: var(--sun); }
+p, li { font-size: 30px; line-height: 1.45; color: var(--ink); }
+.dim { color: var(--dim); }
+.foot { position: absolute; left: 112px; right: 112px; bottom: 44px; display: flex; justify-content: space-between;
+  font-family: "Geist Mono", monospace; font-size: 18px; color: var(--dim); letter-spacing: .04em; }
+.shot { border-radius: 18px; border: 1px solid var(--edge); overflow: hidden; background: #000; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+.shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.cap { font-size: 20px; color: var(--dim); margin: 14px 2px 0; line-height: 1.4; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+ul { padding-left: 1.1em; margin: 0; } li { margin: 0 0 18px; } li::marker { color: var(--sun); }
+.num { font-family: "Instrument Serif", serif; font-size: 120px; line-height: 1; color: var(--sun-hot); }
+.num small { font-family: "Geist", sans-serif; font-size: 26px; color: var(--dim); display: block; margin-top: 12px; line-height: 1.35; }
+a { color: var(--earth); text-decoration: none; }
+/* 1 title */
+.title { padding: 0; }
+.title .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .9; }
+.title .veil { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,6,11,.92) 0%, rgba(5,6,11,.55) 50%, rgba(5,6,11,.1) 100%); }
+.title .in { position: absolute; left: 112px; bottom: 150px; max-width: 1150px; }
+.title .sub { font-size: 44px; font-family: "Instrument Serif", serif; font-style: italic; color: var(--sun-hot); margin: 8px 0 36px; }
+.title .who { font-family: "Geist Mono", monospace; font-size: 24px; color: var(--ink); letter-spacing: .05em; }
+</style>
+</head>
+<body>
+
+<!-- 1. Title: the live story site's hero (captured by scripts_demo_capture.mjs) with name and team -->
+<section class="slide title">
+  <img class="bg" src="title.jpg" alt="Gnomon, Lunar Landing Site Navigator. Anish G, Team: Anish G, NASA Space Apps 2026">
+</section>
+
+<!-- 2. The problem -->
+<section class="slide">
+  <p class="kicker">01 · The problem</p>
+  <h2>At the south pole the Sun <em>circles</em>, about 2° up.</h2>
+  <div class="grid2" style="margin-top: 56px; grid-template-columns: 0.9fr 1.1fr; align-items: start">
+    <ul>
+      <li><b>The Sun never climbs.</b> It goes once round the sky a month, never more than ~2.5° up; a ridge 100 km away can switch a solar lander off.</li>
+      <li><b>Earth bobs.</b> Libration lifts and drops Earth a few degrees; it hides behind terrain for days. Artemis III assumes no relay.</li>
+      <li><b>Small moves matter.</b> Inside one landing ellipse, the ground goes from never lit to lit most of the time.</li>
+    </ul>
+    <div>
+      <div class="shot" style="height: 560px"><img src="../../docs/screenshots/story_earth_50_desktop.webp" alt="Earth's elevation against the terrain"></div>
+      <p class="cap">Earth plays hide and seek: de Gerlache Rim 2, January 2027, hourly from NASA SPICE. Red: no line of sight home.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Gnomon · Lunar Landing Site Navigator</span><span>2 / 7</span></div>
+</section>
+
+<!-- 3. Be the Sun -->
+<section class="slide">
+  <p class="kicker">02 · Be the Sun</p>
+  <h2>Move the light. Watch the <em>ridge</em> take it away.</h2>
+  <div class="grid2" style="margin-top: 52px">
+    <div>
+      <div class="shot" style="height: 500px"><img src="../../docs/screenshots/story_pole_70_desktop.webp" alt="The LOLA polar cap relit by a 1.5° Sun"></div>
+      <p class="cap">The whole polar cap, 80°S to the pole (NASA LOLA), relit live in WebGL by a Sun 1.5° up. Your cursor is the Sun.</p>
+    </div>
+    <div>
+      <div class="shot" style="height: 500px"><img src="../../docs/screenshots/story_sun_95_desktop.webp" alt="The Sun's path over the real skyline"></div>
+      <p class="cap">The Sun's real path (SPICE DE440) over the real skyline at de Gerlache Rim 2: lit 44% of January 2027. On 20 Jan <b style="color:var(--sun)">Mons Malapert, 111 km away at az 94°</b>, steals 4 hours.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Every blocking point is named from the USGS Gazetteer</span><span>3 / 7</span></div>
+</section>
+
+<!-- 4. Athena -->
+<section class="slide">
+  <p class="kicker">03 · Hindsight: IM-2 Athena, 6 Mar 2025</p>
+  <h2><em>250 metres</em> decided Athena's fate.</h2>
+  <div class="grid2" style="margin-top: 52px; grid-template-columns: 1.15fr .85fr; align-items: start">
+    <div>
+      <div class="shot" style="height: 560px"><img src="../../docs/screenshots/story_athena_50_desktop.webp" alt="Athena replay on the story site"></div>
+      <p class="cap">Touchdown 17:28:50 UTC, Sun 2.5° up at az 66°. Our replay at LROC's resting spot.</p>
+    </div>
+    <ul>
+      <li>Athena landed ~250 m from its target and tipped over in a <b>~20 m crater</b>.</li>
+      <li>At 2.5°, that crater's rim casts a 46–93 m shadow: the floor was dark.</li>
+      <li><b>Honest limit:</b> 20 m is <i>one pixel</i> of the best public LOLA terrain there. Our model shows the zone fully lit; it cannot see that crater, and we say so.</li>
+      <li>Lesson: at the pole, a few hundred metres change everything, so plan over the whole ellipse.</li>
+    </ul>
+  </div>
+  <div class="foot"><span>Intuitive Machines attributed the navigation error to long shadows and dim polar light</span><span>4 / 7</span></div>
+</section>
+
+<!-- 5. Console -->
+<section class="slide">
+  <p class="kicker">04 · The mission console</p>
+  <h2>Verdicts you can act on, and a <em>Plan B</em> when the launch slips.</h2>
+  <div class="grid2" style="margin-top: 52px">
+    <div>
+      <div class="shot" style="height: 520px"><img src="../../docs/screenshots/app_site_desktop.webp" alt="Site page verdicts"></div>
+      <p class="cap"><b>Site:</b> Power, Comms and Landing-light verdicts with reasons, countdowns to sunset and Earthset, the sky panorama, "blame the ridge", and odds over 200 simulated landings.</p>
+    </div>
+    <div>
+      <div class="shot" style="height: 520px"><img src="../../docs/screenshots/app_replan_desktop.webp" alt="Slip Replanner"></div>
+      <p class="cap"><b>Slip Replanner:</b> a 42-day slip turns 85% Sun-and-link into 0%; every site and landing day is re-ranked, with Plan B cards and "what changed".</p>
+    </div>
+  </div>
+  <div class="foot"><span>Live: gnomon-moon.streamlit.app</span><span>5 / 7</span></div>
+</section>
+
+<!-- 6. Validation -->
+<section class="slide">
+  <p class="kicker">05 · Validation</p>
+  <h2>Checked against NASA and JPL.</h2>
+  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 64px; margin-top: 80px">
+    <div class="num">0.004″<small><b style="color:var(--ink)">Ephemeris vs JPL Horizons.</b> Largest error over 130 Sun and Earth positions (Apollo 11, Shackleton rim, Malapert, Athena's landing day).</small></div>
+    <div class="num">13 / 14<small><b style="color:var(--ink)">Long-run sunlight vs NASA's LOLA maps</b> (PGDA product 69): polar sites inside NASA's own range within 420 m of the site.</small></div>
+    <div class="num">4 Sep 2023<small><b style="color:var(--ink)">Hindcast.</b> Our first sunset after Chandrayaan-3 landed: the day ISRO put Vikram to sleep "at sunset". Blue Ghost 1 within ~2.5 h.</small></div>
+  </div>
+  <p class="dim" style="margin-top: 72px; font-size: 24px; max-width: 1500px">The one outlier, Peak near Cabeus B, is explained by our finer 20 m near-field terrain. Comm thresholds and lander power numbers are illustrative and labelled so. Known limits: docs/METHOD.md.</p>
+  <div class="foot"><span>Same DE440 ephemeris and MOON_ME frame as NASA NAIF</span><span>6 / 7</span></div>
+</section>
+
+<!-- 7. Open source -->
+<section class="slide">
+  <p class="kicker">06 · Built on open data and open code</p>
+  <h2>NASA data, open-source tools, <em>glue code</em>.</h2>
+  <div class="grid2" style="margin-top: 52px">
+    <ul>
+      <li><b>NASA data:</b> LOLA DEMs and illumination maps (PGDA 90, 69), NAIF SPICE DE440, JPL Horizons, LRO Diviner, LROC, USGS Gazetteer, NASA SVS imagery.</li>
+      <li><b>Open code:</b> NASA-AMMOS MMGIS Sightline (Apache-2.0), SpiceyPy, Skyfield, rasterio, Streamlit, Plotly, three.js.</li>
+      <li>Apache-2.0. Every source credited in ATTRIBUTIONS.md.</li>
+    </ul>
+    <div style="font-size: 30px; line-height: 2">
+      <p style="margin:0"><span class="dim">Story site</span><br><a href="https://anish-185.github.io/lunar-landing-site-navigator/">anish-185.github.io/lunar-landing-site-navigator</a></p>
+      <p style="margin:24px 0 0"><span class="dim">Mission console</span><br><a href="https://gnomon-moon.streamlit.app">gnomon-moon.streamlit.app</a></p>
+      <p style="margin:24px 0 0"><span class="dim">Code</span><br><a href="https://github.com/Anish-185/lunar-landing-site-navigator">github.com/Anish-185/lunar-landing-site-navigator</a></p>
+    </div>
+  </div>
+  <div class="foot"><span>AI disclosure: written with Claude Code (Anthropic); directed, reviewed and tested by the team</span><span>7 / 7</span></div>
+</section>
+
+</body>
+</html>
