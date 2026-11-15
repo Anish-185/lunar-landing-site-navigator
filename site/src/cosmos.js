@@ -3,7 +3,7 @@
 import {
   AdditiveBlending, AmbientLight, BufferAttribute, BufferGeometry, Color, DirectionalLight, Group, MathUtils, Mesh,
   MeshStandardMaterial, PerspectiveCamera, Points, PointsMaterial, Scene, SphereGeometry, SRGBColorSpace,
-  TextureLoader, WebGLRenderer, CanvasTexture,
+  TextureLoader, WebGLRenderer, CanvasTexture, Sprite, SpriteMaterial, Vector3,
 } from "three";
 
 const STAR_COLOURS = ["#ffffff", "#cfe6ff", "#ffe7b0", "#f6b94a", "#b9c7ff", "#ffd2a8"];
@@ -21,7 +21,7 @@ function dotTexture() {
   return new CanvasTexture(c);
 }
 
-export function createCosmos(canvas, { reduced = false, base = "./" } = {}) {
+export function createCosmos(canvas, { reduced = false, base = "./", light = null } = {}) {
   const small = window.innerWidth < 760;
   const renderer = new WebGLRenderer({ canvas, antialias: !small, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 1.75));
@@ -68,9 +68,23 @@ export function createCosmos(canvas, { reduced = false, base = "./" } = {}) {
   const earth = new Mesh(new SphereGeometry(4 * 3.67, 96, 64), earthMat);
   earth.position.set(-70, 16, -150);
   sys.add(moon, earth);
-  const sun = new DirectionalLight(0xfff1d8, 3.2);
-  sun.position.set(60, 8, 20);
-  scene.add(sun, new AmbientLight(0x2a2f5c, 0.35));
+  // The Sun: lit from its real direction at light.utc (SPICE, MOON_ME), carried with the Moon's rotation so the
+  // terminator falls where it really fell. Texture mapping: three's sphere puts lon 0 on +X, lon 90 E on -Z, north +Y,
+  // so MOON_ME (x, y, z) -> three (x, z, -y).
+  const s = light?.sun || [0.6, 0.8, 0];
+  const sunBody = new Vector3(s[0], s[2], -s[1]).normalize();
+  const sun = new DirectionalLight(0xfff1d8, 3.4);
+  scene.add(sun, sun.target, new AmbientLight(0x1a1c2c, 0.22));
+  sun.target = moon;
+  // Soft bloom: an additive glow sprite where the Sun is (visible only when the camera faces it).
+  const glow = new Sprite(new SpriteMaterial({ map: dotTexture(), color: 0xffe9c2, blending: AdditiveBlending, transparent: true, depthWrite: false, opacity: 0 }));
+  glow.scale.setScalar(26);
+  scene.add(glow);
+  const tmpV = new Vector3();
+  // Face the Moon the way Earth saw it at light.utc (sub-Earth point toward the camera), so the phase is real.
+  const e = light?.earth || [1, 0, 0];
+  const faceY = -Math.PI / 2 - Math.atan2(e[1], e[0]);
+  const faceX = Math.asin(e[2]);
 
   let bang = reduced ? 1 : 0;   // 0 -> 1 over the opening burst
   let p = 0;                    // scroll progress through chapters 1-2 (0..2)
@@ -108,13 +122,19 @@ export function createCosmos(canvas, { reduced = false, base = "./" } = {}) {
     moonMat.opacity = show;
     earthMat.opacity = show * 0.95;
     const toPole = MathUtils.smoothstep(p, 1.0, 1.45);
-    moon.rotation.y = 2.4 + p * 0.9 * (1 - toPole);
-    moon.rotation.x = MathUtils.lerp(0.12, -Math.PI / 2 + 0.05, toPole);   // south pole turns toward us
     moon.position.x = MathUtils.lerp(small ? 0 : 7, 0, toPole);
     moon.position.y = MathUtils.lerp(small ? 3 : 0, 0, toPole);
     camera.position.z = MathUtils.lerp(30, 9.5, toPole);
+    // keep the sub-Earth point facing the camera even though the Moon sits off-axis: the phase stays the real one
+    const offAxis = Math.atan2(moon.position.x, camera.position.z - moon.position.z);
+    moon.rotation.y = faceY - offAxis * (1 - toPole);
+    moon.rotation.x = MathUtils.lerp(faceX, -Math.PI / 2 + 0.05, toPole);   // south pole turns toward us
     earth.rotation.y = p * 1.2;
     earthMat.opacity = show * 0.95 * (1 - toPole);
+    tmpV.copy(sunBody).applyQuaternion(moon.quaternion);
+    sun.position.copy(moon.position).addScaledVector(tmpV, 100);
+    glow.position.copy(moon.position).addScaledVector(tmpV, 120);
+    glow.material.opacity = show * 0.9;
     canvas.style.opacity = String(1 - MathUtils.smoothstep(p, 1.4, 1.62));
     renderer.render(scene, camera);
   }

@@ -30,8 +30,9 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 
 | Resource | License | Use | Link |
 |---|---|---|---|
-| Fraunces (variable), via Fontsource `@fontsource-variable/fraunces` | SIL Open Font License 1.1 (`app/static/fonts/LICENSE-Fraunces-OFL.txt`) | Headings, app and story site | https://github.com/undercasetype/Fraunces |
-| Hanken Grotesk (variable), via Fontsource `@fontsource-variable/hanken-grotesk` | SIL Open Font License 1.1 (`app/static/fonts/LICENSE-HankenGrotesk-OFL.txt`) | Body text and numbers | https://github.com/marcologous/hanken-grotesk |
+| Instrument Serif, via Fontsource `@fontsource/instrument-serif` | SIL Open Font License 1.1 (`app/static/fonts/LICENSE-InstrumentSerif-OFL.txt`) | Display headings, app and story site | https://github.com/Instrument/instrument-serif |
+| Geist (variable), via Fontsource `@fontsource-variable/geist` | SIL Open Font License 1.1 (`app/static/fonts/LICENSE-Geist-OFL.txt`) | Body text, UI and large figures | https://github.com/vercel/geist-font |
+| Geist Mono (variable), via Fontsource `@fontsource-variable/geist-mono` | SIL Open Font License 1.1 (`app/static/fonts/LICENSE-GeistMono-OFL.txt`) | Readouts: times, angles, chart ticks | https://github.com/vercel/geist-font |
 | Lucide icons (`lucide`, `lucide-static`) | ISC (`app/static/icons/LICENSE-lucide-ISC.txt`) | Status and card icons | https://lucide.dev |
 
 ## Site catalog sources (`pipeline/sites.yaml`, `pipeline/landers.yaml`)
@@ -68,7 +69,7 @@ Every external resource used in this project, as the NASA Space Apps terms requi
 
 | Library | License | Use | Link |
 |---|---|---|---|
-| three.js | MIT | 3D Moon and Earth, Big Bang particle opening | https://threejs.org |
+| three.js | MIT | 3D Moon and Earth (lit from the SPICE Sun direction), Big Bang particle opening, the "be the Sun" relit polar terrain shader | https://threejs.org |
 | Lenis | MIT | Smooth scrolling | https://github.com/darkroomengineering/lenis |
 | Motion (motion.dev) | MIT | Scroll-linked reveals and parallax (instead of GSAP, whose license is not OSI open source) | https://motion.dev |
 | Plotly.js (`plotly.js-dist-min`) | MIT | Story charts | https://github.com/plotly/plotly.js |

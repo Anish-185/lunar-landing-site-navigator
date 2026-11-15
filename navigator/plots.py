@@ -9,24 +9,29 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
 
-SUN, EARTH, TERRAIN, ALARM = "#F6B94A", "#59A8FF", "#A7A9B4", "#FF5A5F"
-GO, CAUTION, INK, INK_DIM, VOID = "#5FD4B0", "#FF8A3D", "#ECE9F7", "#A9A6C2", "#070B24"
+SUN, EARTH, TERRAIN, ALARM = "#F4B860", "#6FB1FF", "#8C8A86", "#FF5C5C"
+GO, CAUTION, INK, INK_DIM, VOID = "#6ED6B0", "#FF9A4D", "#EDEAE2", "#A3A09A", "#05060B"
 BAND_COLORS = {"good": EARTH, "marginal": "#9CC9FF", "poor": CAUTION, "none": ALARM}
-FONT = "Hanken Grotesk, Inter, system-ui, sans-serif"
+FONT = "Geist, system-ui, sans-serif"
+MONO = "Geist Mono, ui-monospace, monospace"
 
 TEMPLATE = go.layout.Template(layout=go.Layout(
-    font=dict(family=FONT, color=INK, size=13),
-    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(7,11,36,0.55)",
-    colorway=[SUN, EARTH, TERRAIN, ALARM, "#B58CFF", GO],
-    xaxis=dict(gridcolor="rgba(167,169,180,0.10)", zerolinecolor="rgba(167,169,180,0.25)", linecolor="rgba(167,169,180,0.25)"),
-    yaxis=dict(gridcolor="rgba(167,169,180,0.10)", zerolinecolor="rgba(167,169,180,0.25)", linecolor="rgba(167,169,180,0.25)"),
-    hoverlabel=dict(bgcolor="#11163A", bordercolor="#2A2F5C", font=dict(family=FONT, color=INK)),
+    font=dict(family=FONT, color=INK, size=12),
+    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+    colorway=[SUN, EARTH, TERRAIN, ALARM, "#9B85FF", GO],
+    xaxis=dict(gridcolor="rgba(232,228,216,0.07)", zerolinecolor="rgba(232,228,216,0.22)", linecolor="rgba(232,228,216,0.18)",
+               tickfont=dict(family=MONO, color=INK_DIM, size=11), title=dict(font=dict(color=INK_DIM, size=12))),
+    yaxis=dict(gridcolor="rgba(232,228,216,0.07)", zerolinecolor="rgba(232,228,216,0.22)", linecolor="rgba(232,228,216,0.18)",
+               tickfont=dict(family=MONO, color=INK_DIM, size=11), title=dict(font=dict(color=INK_DIM, size=12))),
+    hoverlabel=dict(bgcolor="#0B0D17", bordercolor="rgba(244,184,96,0.4)", font=dict(family=FONT, color=INK)),
     legend=dict(bgcolor="rgba(0,0,0,0)", orientation="h", y=1.08, x=0, font=dict(color=INK_DIM)),
     margin=dict(l=56, r=20, t=48, b=48),
-    title=dict(font=dict(family="Fraunces, Georgia, serif", size=18, color=INK), x=0, xanchor="left"),
+    title=dict(font=dict(family="Instrument Serif, Georgia, serif", size=22, color=INK), x=0, xanchor="left"),
 ))
 pio.templates["gnomon"] = TEMPLATE
-CONFIG = {"displaylogo": False, "modeBarButtonsToRemove": ["lasso2d", "select2d"],
+CONFIG = {"displaylogo": False, "displayModeBar": "hover",
+          "modeBarButtonsToRemove": ["lasso2d", "select2d", "autoScale2d", "toggleSpikelines", "hoverClosestCartesian",
+                                     "hoverCompareCartesian"],
           "toImageButtonOptions": {"format": "png", "scale": 2, "filename": "gnomon"}}
 
 
@@ -76,7 +81,7 @@ def sky_panorama(site, tl: pd.DataFrame, mast_m: float, frame_hours: int = 6, he
     def discs(r):
         return [go.Scatter(x=[r["sun_az"] % 360], y=[r["sun_el"]], mode="markers", name="Sun",
                            marker=dict(size=max(2 * r["sun_r"] * px_per_deg, 6), color=SUN,
-                                       line=dict(color="#FFE3A3", width=1)),
+                                       line=dict(color="#FFE9C2", width=1)),
                            hovertemplate="Sun<br>az %{x:.1f}° el %{y:.2f}°<extra></extra>"),
                 go.Scatter(x=[r["earth_az"] % 360], y=[r["earth_el"]], mode="markers", name="Earth",
                            marker=dict(size=max(2 * r["earth_r"] * px_per_deg, 6), color=EARTH,
@@ -99,7 +104,7 @@ def sky_panorama(site, tl: pd.DataFrame, mast_m: float, frame_hours: int = 6, he
                    ticktext=["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"], title=None),
         yaxis=dict(range=[lo, hi], title="Elevation (°)"),
         updatemenus=[dict(type="buttons", showactive=False, x=0, y=-0.2, xanchor="left", yanchor="top",
-                          bgcolor="#11163A", bordercolor="#2A2F5C", font=dict(color=INK),
+                          bgcolor="#0B0D17", bordercolor="#2A2924", font=dict(color=INK),
                           buttons=[dict(label="Play", method="animate",
                                         args=[None, dict(frame=dict(duration=120, redraw=False), fromcurrent=True,
                                                          transition=dict(duration=0))]),
@@ -107,7 +112,7 @@ def sky_panorama(site, tl: pd.DataFrame, mast_m: float, frame_hours: int = 6, he
                                         args=[[None], dict(mode="immediate", frame=dict(duration=0, redraw=False))])])],
         sliders=[dict(active=0, steps=steps, x=0.12, len=0.88, y=-0.14, yanchor="top", pad=dict(t=0),
                       currentvalue=dict(prefix="UTC ", font=dict(color=INK_DIM, size=12)),
-                      font=dict(color=INK_DIM, size=10), bgcolor="#2A2F5C", activebgcolor=SUN, tickcolor="#2A2F5C")],
+                      font=dict(color=INK_DIM, size=10), bgcolor="#2A2924", activebgcolor=SUN, tickcolor="#2A2924")],
     )
     return fig
 
@@ -175,7 +180,7 @@ def psr_traces(geojson: dict, min_area_km2: float = 3.0, crs_scale: float = 1.0)
             ring = np.asarray(poly[0])
             xs += list(ring[:, 0] / 1000) + [None]
             ys += list(ring[:, 1] / 1000) + [None]
-    return go.Scatter(x=xs, y=ys, mode="lines", line=dict(color="#B58CFF", width=1), name="Permanently shadowed",
+    return go.Scatter(x=xs, y=ys, mode="lines", line=dict(color="#9B85FF", width=1), name="Permanently shadowed",
                       hoverinfo="skip")
 
 
@@ -190,7 +195,7 @@ def map_figure(layer: dict, body: str, sites: pd.DataFrame, psr: go.Scatter | No
         scale = [[0, "#05071A"], [0.2, "#14234F"], [0.5, "#2F64B5"], [0.8, EARTH], [1, "#E3F0FF"]]
         zmin, zmax, unit, src = 0, 100, "% of time", "NASA"
     else:  # Diviner annual maximum temperature: cold traps (< 110 K) in icy blue, the rest warming to ember
-        scale = [[0, "#BFE3FF"], [0.18, "#4D8FD6"], [0.2, "#2A2F5C"], [0.55, "#6E3F4E"], [1, "#F08A4B"]]
+        scale = [[0, "#BFE3FF"], [0.18, "#4D8FD6"], [0.2, "#2A2924"], [0.55, "#6E3F4E"], [1, "#F08A4B"]]
         zmin, zmax, unit, src = 40, 340, "K (annual max)", "Diviner"
     z = layer[body]
     fig = go.Figure(go.Heatmap(x=layer["x"] / 1000, y=layer["y"] / 1000, z=z, colorscale=scale, zmin=zmin, zmax=zmax,
@@ -210,7 +215,7 @@ def map_figure(layer: dict, body: str, sites: pd.DataFrame, psr: go.Scatter | No
     labels = np.where(sel, sites["short"], "")  # crowded near the pole: name only the selected site, hover the rest
     fig.add_trace(go.Scatter(x=sites["x_km"], y=sites["y_km"], mode="markers+text", text=labels,
                              hovertext=sites["short"], textposition="top center",
-                             textfont=dict(color=INK, size=13, family="Fraunces, serif"), customdata=sites["id"],
+                             textfont=dict(color=INK, size=13, family="Instrument Serif, serif"), customdata=sites["id"],
                              marker=dict(size=np.where(sel, 16, 10), color=np.where(sel, SUN, INK), symbol="diamond",
                                          line=dict(color=VOID, width=1.5)),
                              name="Sites", hovertemplate="%{hovertext}<extra>click to plan</extra>"))
@@ -334,7 +339,7 @@ def replan_heatmap(df: pd.DataFrame, landing, original_site: str, height: int = 
     """Rows = sites, columns = landing dates; colour = % Sun and link; crosses where the battery fails."""
     piv = df.pivot_table(index="name", columns="date", values="pct_both", sort=False)
     fail = df[~df["survives"]]
-    scale = [[0, "#0B0F2E"], [0.3, "#3B3150"], [0.6, "#C2793A"], [0.85, SUN], [1, "#FFF1C9"]]
+    scale = [[0, "#0B0D17"], [0.3, "#3B3150"], [0.6, "#C2793A"], [0.85, SUN], [1, "#FFF1C9"]]
     fig = go.Figure(go.Heatmap(x=piv.columns, y=piv.index, z=piv.values, colorscale=scale, zmin=0, zmax=100,
                                colorbar=dict(title=dict(text="Sun + link %", side="right"), thickness=10),
                                hovertemplate="%{y}<br>land %{x|%-d %b %Y}<br>Sun + link %{z:.0f} %<extra></extra>"))

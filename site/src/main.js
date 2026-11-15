@@ -1,8 +1,9 @@
 // Gnomon story site. Real data from site/public/data/story.json (written by pipeline/export_site.py).
 // Libraries do the heavy lifting: Lenis (smooth scroll), Motion (scroll-linked progress), three.js (cosmos, lazy),
 // Plotly.js (charts, lazy), Lucide (status icons). This file is glue.
-import "@fontsource-variable/fraunces/full.css";
-import "@fontsource-variable/hanken-grotesk";
+import "@fontsource/instrument-serif/400.css";
+import "@fontsource-variable/geist";
+import "@fontsource-variable/geist-mono";
 import "./style.css";
 import Lenis from "lenis";
 import { scroll } from "motion";
@@ -14,6 +15,14 @@ const $ = (s, el = document) => el.querySelector(s);
 const fmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 const fmtT = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
 const pct = (v) => `${Math.round(v)}%`;
+
+// --- loader: a sundial while fonts and data arrive; never longer than 1.4 s, click or any key skips it ---
+const loader = $("#loader");
+const hideLoader = () => loader?.classList.add("done");
+if (reduced) hideLoader();
+loader?.addEventListener("click", hideLoader);
+addEventListener("keydown", hideLoader, { once: true });
+Promise.race([Promise.all([document.fonts.ready, new Promise((r) => setTimeout(r, 700))]), new Promise((r) => setTimeout(r, 1400))]).then(hideLoader);
 
 const [data, config] = await Promise.all([
   fetch(`${BASE}data/story.json`).then((r) => r.json()),
@@ -33,14 +42,33 @@ const rail = $("#rail");
 chapters.forEach((c) => {
   const a = document.createElement("a");
   a.href = `#${c.id}`;
-  a.setAttribute("aria-label", c.dataset.title);
-  a.title = c.dataset.title;
+  a.innerHTML = `<span>${c.dataset.title}</span>`;
   rail.append(a);
 });
 const io = new IntersectionObserver((es) => es.forEach((e) => {
-  if (e.isIntersecting) [...rail.children].forEach((a) => a.setAttribute("aria-current", String(a.hash === `#${e.target.id}`)));
+  if (!e.isIntersecting) return;
+  [...rail.children].forEach((a) => a.setAttribute("aria-current", String(a.hash === `#${e.target.id}`)));
+  $("#now-n").textContent = String(chapters.indexOf(e.target) + 1).padStart(2, "0");
+  $("#now-t").textContent = e.target.dataset.title;
 }), { rootMargin: "-45% 0px -45% 0px" });
 chapters.forEach((c) => io.observe(c));
+
+// --- light: headings are lit by a grazing Sun whose azimuth swings round as you read (CONCEPT.md) ---
+const root = document.documentElement;
+if (!reduced) scroll((p) => root.style.setProperty("--sun-a", `${(100 + p * 220).toFixed(1)}deg`));
+// each chapter heading arrives with a terminator sweeping across it
+const sweep = new IntersectionObserver((es) => es.forEach((e) => {
+  if (e.isIntersecting) { e.target.classList.add("in"); sweep.unobserve(e.target); }
+}), { threshold: [0, 0.35], rootMargin: "0px 0px -30% 0px" });
+document.querySelectorAll(".reveal, .seam").forEach((h) => (reduced ? h.classList.add("in") : sweep.observe(h)));
+// desktop: the cursor carries a faint light
+if (matchMedia("(pointer: fine)").matches && !reduced) {
+  let q = false, mx = 0, my = 0;
+  addEventListener("pointermove", (e) => {
+    mx = e.clientX; my = e.clientY;
+    if (!q) { q = true; requestAnimationFrame(() => { q = false; document.body.style.setProperty("--mx", `${mx}px`); document.body.style.setProperty("--my", `${my}px`); }); }
+  }, { passive: true });
+}
 
 // --- beats: copy that appears for a slice of a pinned chapter's scroll ---
 function beats(section, p) {
@@ -60,7 +88,7 @@ const startCosmos = () => {
   started = true;
   ["wheel", "touchstart", "keydown", "pointerdown", "scroll"].forEach((ev) => removeEventListener(ev, startCosmos));
   cosmosModule.then(({ createCosmos }) => {
-    cosmos = createCosmos($("#cosmos"), { reduced, base: BASE });
+    cosmos = createCosmos($("#cosmos"), { reduced, base: BASE, light: data.light });
     $(".singularity")?.classList.add("gone");
     toCosmos();
   });
@@ -105,6 +133,44 @@ beats(origin, 0);
     pole.classList.toggle("zoomed", p > 0.5);
   }, { target: pole, offset: ["start start", "end end"] });
   if (reduced) { terrain.style.opacity = "1"; pole.classList.add("zoomed"); beats(pole, 1); }
+
+  // You are the Sun: relight the LOLA cap with cast shadows (WebGL); the hillshade image stays as the fallback.
+  const range = $("#sun-range"), label = $("#sun-az"), hint = $("#sun-hint");
+  const fine = matchMedia("(pointer: fine)").matches;
+  hint.textContent = fine ? "Move your cursor around the pole: you are the Sun." : "Drag around the pole to move the Sun.";
+  let relight = null, az = 135, auto = !fine && !reduced, inView = false, last = 0;
+  const setAz = (a) => {
+    az = ((a % 360) + 360) % 360;
+    relight?.setSun(az);
+    range.value = String(Math.round(az));
+    label.textContent = `Sun from ${String(Math.round(az)).padStart(3, "0")}°, 1.5° up`;
+  };
+  const fromPointer = (e) => {
+    const r = terrain.getBoundingClientRect();
+    setAz((Math.atan2(e.clientX - (r.left + r.width / 2), (r.top + r.height / 2) - e.clientY) * 180) / Math.PI);
+  };
+  const sticky = $(".sticky", pole);
+  sticky.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse" || e.buttons) { auto = false; fromPointer(e); } });
+  range.addEventListener("input", () => { auto = false; setAz(+range.value); });
+  const orbit = (now) => {          // touch: the Sun circles on its own (a lunar day in 20 s) until you drag
+    if (!auto || !inView) return;
+    if (last) setAz(az + ((now - last) / 20000) * 360);
+    last = now;
+    requestAnimationFrame(orbit);
+  };
+  new IntersectionObserver(async ([e]) => {
+    inView = e.isIntersecting;
+    if (inView && !relight) {
+      try {
+        const [{ createRelight }, meta] = await Promise.all([import("./relight.js"), fetch(`${BASE}media/pole_height.json`).then((r) => r.json())]);
+        relight = await createRelight($("#relight"), meta, BASE);
+        setAz(az);
+        terrain.classList.add("relit");
+      } catch { /* no WebGL: the pre-lit hillshade stays */ }
+    }
+    if (inView && auto) { last = 0; requestAnimationFrame(orbit); }
+  }, { rootMargin: "20% 0px" }).observe(pole);
+  setAz(az);
 })();
 
 // --- 3: the Sun circles the horizon ---
@@ -197,8 +263,8 @@ $("#earth-lede").innerHTML = `Libration nods Earth up and down every month: from
   Behind the ridges it drops out of sight, and over January it is in view only <em class="earth">${pct(e.pct_visible)}</em> of the time.`;
 
 const r = data.ridge;
-$("#ridge-duo").innerHTML = `<div class="lo"><b>${r.nasa_min}%</b><span>NASA's darkest cell</span></div><i>to</i>
-  <div class="hi"><b>${r.nasa_max}%</b><span>NASA's brightest cell</span></div>`;
+$("#ridge-duo").innerHTML = `<div class="lo"><b>${r.nasa_min}<span class="u">%</span></b><span>NASA's darkest cell</span></div><i>to</i>
+  <div class="hi"><b>${r.nasa_max}<span class="u">%</span></b><span>NASA's brightest cell</span></div>`;
 $("#ridge-lede").innerHTML = `Blue Moon MK1 is headed for the ridge that joins Shackleton to its neighbours. Within ${r.radius_m} m of
   the target, NASA's 18.6-year sunlight map runs from pits that never see the Sun to a crest lit ${r.nasa_max}% of the time. Our own number
   at the target, from 20 m terrain, is ${r.ours}%, inside NASA's range. A few hundred metres is the difference between a mission
@@ -226,7 +292,7 @@ $("#athena-cap").textContent = `20 m LOLA relief, lit from the Sun's direction a
     const v = s.pct_both[j][i], ok = s.survives[j][i] === 1;
     const [k, word] = status(v, ok);
     return `<article class="scard" style="--accent:${accent}"><h3>${title}</h3><span class="status ${k}">${icon(k)}${word}</span>
-      <div class="num">${Math.round(v)}<small>% Sun and link</small></div>
+      <div class="num">${Math.round(v)}<span class="u">%</span><small>of the week with Sun and a link home</small></div>
       <p>${v < 5 && title.startsWith("Plan B: switch") ? "Every candidate is dark that day. Best: " : ""}${name}, land ${fmt.format(new Date(dates[i]))}. Battery ${ok ? "survives" : "runs flat"}.</p></article>`;
   };
   const out = $("#slip-out"), range = $("#slip-range");
@@ -238,10 +304,10 @@ $("#athena-cap").textContent = `20 m LOLA relief, lit from the Sun's direction a
     s.names.forEach((nm, j) => { const v = s.pct_both[j][i] - (s.survives[j][i] ? 0 : 1000); if (j !== row && v > bestV) { bestV = v; best = j; } });
     let later = i, laterV = -1e9;
     for (let k = i; k < dates.length; k++) { const v = s.pct_both[row][k] - (s.survives[row][k] ? 0 : 1000); if (v > laterV) { laterV = v; later = k; } }
-    $("#slip-cards").innerHTML = card("Planned", "#A7A9B4", s.site, i0, row)
-      + card(`After a ${slip}-day slip`, "#FF5A5F", s.site, i, row)
-      + card("Plan B: switch site, same day", "#59A8FF", s.names[best], i, best)
-      + (later !== i ? card("Plan B: same site, wait", "#F6B94A", s.site, later, row) : "");
+    $("#slip-cards").innerHTML = card("Planned", "#8C8A86", s.site, i0, row)
+      + card(`After a ${slip}-day slip`, "#FF5C5C", s.site, i, row)
+      + card("Plan B: switch site, same day", "#6FB1FF", s.names[best], i, best)
+      + (later !== i ? card("Plan B: same site, wait", "#F4B860", s.site, later, row) : "");
     document.dispatchEvent(new CustomEvent("slip", { detail: dates[i] }));
   };
   range.addEventListener("input", update);
@@ -276,11 +342,11 @@ $("#athena-cap").textContent = `20 m LOLA relief, lit from the Sun's direction a
   const v = data.evidence;
   const cy3 = v.hindcast.find((h) => /Chandrayaan/.test(h.name));
   $("#proofs").innerHTML = `
-    <div class="proof"><b>${v.horizons_max_arcsec.toFixed(3)}″</b><span>Largest gap between our Sun and Earth positions and NASA JPL's Horizons, over ${v.horizons_n} checks.</span></div>
+    <div class="proof"><b>${v.horizons_max_arcsec.toFixed(3)}<span class="u">arcsec</span></b><span>Largest gap between our Sun and Earth positions and NASA JPL's Horizons, over ${v.horizons_n} checks.</span></div>
     <div class="proof"><b>${v.sun_in_range} of ${v.n_sites}</b><span>Sites where our long-run sunlight falls inside NASA's own map range within 420 m (PGDA product 69).</span></div>
     <div class="proof"><b>${fmt.format(new Date(cy3.our_sunset))} 2023</b><span>Our predicted sunset at Chandrayaan-3's landing site. ISRO shut Vikram down "at sunset over the landing site, twelve days after landing".</span></div>`;
   const rows = v.hindcast.map((h) => `<tr><td>${h.name}</td><td>${fmtT.format(new Date(h.landed))}</td><td>${h.our_sunset ? fmtT.format(new Date(h.our_sunset)) : "none"}</td>
     <td>${h.reported}</td><td>${h.ended_by}</td><td><a href="${h.source}">source</a></td></tr>`).join("");
   $("#hindcast").innerHTML = `<h3 class="h3">The landers that went before</h3><table class="ev"><thead><tr><th>Mission</th><th>Landed (UTC)</th>
-    <th>Our first sunset (UTC)</th><th>Reported end</th><th>Ended by</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    <th>Our first sunset (UTC)</th><th>Reported end</th><th>Ended by</th><th><span class="sr-only">Source</span></th></tr></thead><tbody>${rows}</tbody></table>`;
 })();

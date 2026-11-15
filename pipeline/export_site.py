@@ -177,8 +177,25 @@ def pole() -> dict:
             "sites": sites}
 
 
+LIGHT_UTC = "2027-01-18T12:00Z"  # the app's default scenario (Nobile Rim 2 landing)
+
+
+def light() -> dict:
+    """Unit vectors from the Moon's centre to the Sun and to Earth in MOON_ME at LIGHT_UTC, so the story's 3D Moon is
+    lit from the real Sun direction (physically right terminator) and Earth hangs where it really is."""
+    import spiceypy as spice
+
+    engine.load_kernels()
+    et = spice.str2et(LIGHT_UTC.replace("T", " ").replace("Z", " UTC"))
+    out = {"utc": LIGHT_UTC}
+    for body in ("SUN", "EARTH"):
+        v, _ = spice.spkpos(body, et, "MOON_ME", "LT+S", "MOON")
+        out[body.lower()] = [round(float(c), 5) for c in np.asarray(v) / np.linalg.norm(v)]
+    return out
+
+
 def build_story_data() -> Path:
-    data = {"generated": pd.Timestamp.now(tz="UTC").isoformat(), "pole": pole(), "sun": sun_circles(), "earth": earth_bobs(),
+    data = {"generated": pd.Timestamp.now(tz="UTC").isoformat(), "light": light(), "pole": pole(), "sun": sun_circles(), "earth": earth_bobs(),
             "ridge": small_moves(), "athena": athena(), "slip": slip(), "evidence": evidence()}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, separators=(",", ":"), allow_nan=False))

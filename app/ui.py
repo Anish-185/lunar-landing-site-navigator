@@ -102,8 +102,8 @@ def sidebar() -> dict:
     for k, v in ss.pop("_pending", {}).items():
         ss[k] = v
     with st.sidebar:
-        st.markdown(f"<div style='font-family:Fraunces,serif;font-size:1.7rem;font-weight:300;line-height:1'>{NAME}</div>"
-                    f"<div style='color:#A9A6C2;font-size:.85rem;margin:.2rem 0 1rem'>{SUBTITLE}</div>",
+        st.markdown(f"<div style='font-family:&quot;Instrument Serif&quot;,serif;font-size:2.1rem;font-weight:400;line-height:1;letter-spacing:-.01em'>{NAME}</div>"
+                    f"<div style='color:#A3A09A;font-size:.85rem;margin:.2rem 0 1rem'>{SUBTITLE}</div>",
                     unsafe_allow_html=True)
         sid = st.selectbox("Landing site", _site_options(), format_func=_site_label, key="site")
         if sid == CUSTOM:

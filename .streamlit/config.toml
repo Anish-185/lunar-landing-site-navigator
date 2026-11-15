@@ -1,4 +1,4 @@
-# Gnomon theme: deep space base; colour carries meaning (Sun gold, Earth blue, terrain grey, fail red).
+# Gnomon theme (docs/design/CONCEPT.md, LOW LIGHT): space black base; colour carries meaning (Sun gold, Earth blue, terrain grey, fail red).
 [server]
 enableStaticServing = true
 headless = true
@@ -11,29 +11,35 @@ toolbarMode = "minimal"
 
 [theme]
 base = "dark"
-primaryColor = "#F6B94A"
-backgroundColor = "#070B24"
-secondaryBackgroundColor = "#11163A"
-textColor = "#ECE9F7"
-linkColor = "#59A8FF"
-borderColor = "#2A2F5C"
-font = "Hanken Grotesk, sans-serif"
-headingFont = "Fraunces, serif"
+primaryColor = "#F4B860"
+backgroundColor = "#05060B"
+secondaryBackgroundColor = "#0B0D17"
+textColor = "#EDEAE2"
+linkColor = "#6FB1FF"
+borderColor = "#2A2924"
+font = "Geist, sans-serif"
+headingFont = "Instrument Serif, serif"
+codeFont = "Geist Mono, monospace"
 headingFontWeights = 400
-baseRadius = "0.6rem"
+baseRadius = "0.75rem"
 showWidgetBorder = true
-chartCategoricalColors = ["#F6B94A", "#59A8FF", "#A7A9B4", "#FF5A5F", "#B58CFF", "#6FE0C2"]
+chartCategoricalColors = ["#F4B860", "#6FB1FF", "#8C8A86", "#FF5C5C", "#9B85FF", "#6ED6B0"]
 
 [[theme.fontFaces]]
-family = "Hanken Grotesk"
-url = "app/static/fonts/hanken-grotesk-latin-wght-normal.woff2"
+family = "Geist"
+url = "app/static/fonts/geist-latin-wght-normal.woff2"
 weight = "100 900"
 
 [[theme.fontFaces]]
-family = "Fraunces"
-url = "app/static/fonts/fraunces-latin-full-normal.woff2"
+family = "Geist Mono"
+url = "app/static/fonts/geist-mono-latin-wght-normal.woff2"
 weight = "100 900"
+
+[[theme.fontFaces]]
+family = "Instrument Serif"
+url = "app/static/fonts/instrument-serif-latin-400-normal.woff2"
+weight = 400
 
 [theme.sidebar]
-backgroundColor = "#0B0F2E"
-secondaryBackgroundColor = "#151A44"
+backgroundColor = "#0B0D17"
+secondaryBackgroundColor = "#14151F"

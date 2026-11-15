@@ -164,7 +164,7 @@ def steps() -> list[Step]:
         Step("media", media.build, [media],
              ["data/raw/media/*", "data/derived/dem_80s_160m.tif"],
              ["app/static/nebula.webp", "site/public/media/moon_color.jpg", "site/public/media/earth.jpg",
-              "site/public/media/pole_hillshade.webp"]),
+              "site/public/media/pole_hillshade.webp", "site/public/media/pole_height.png"]),
     ]
 
 

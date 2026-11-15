@@ -10,6 +10,7 @@ compress with rasterio (GDAL's JPEG/WEBP drivers, no extra imaging library).
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -52,7 +53,7 @@ def _read_rgb(path: Path, width: int | None = None) -> np.ndarray:
 def _write(a: np.ndarray, dst: Path, driver: str = "WEBP", quality: int = 70) -> Path:
     dst.parent.mkdir(parents=True, exist_ok=True)
     opts = {"QUALITY": quality} if driver in ("WEBP", "JPEG") else {}
-    with rasterio.Env(GDAL_PAM_ENABLED="NO"):
+    with rasterio.Env(GDAL_PAM_ENABLED="NO", CPL_LOG="/dev/null"):
         with rasterio.open(dst, "w", driver=driver, width=a.shape[2], height=a.shape[1], count=a.shape[0],
                            dtype="uint8", **opts) as out:
             out.write(a)
@@ -82,6 +83,21 @@ def hillshade(dem: Path, width: int = 1400, az_deg: float = 315.0, alt_deg: floa
     return np.repeat(g[None].astype(np.uint8), 3, axis=0)
 
 
+def heightmap(dem: Path, width: int = 768) -> tuple[np.ndarray, dict]:
+    """The 80-90 S LOLA DEM packed for the browser: 16-bit height split over red (high byte) and green (low byte),
+    blue = 255 where there is data. The story site relights it in a shader with ray-marched cast shadows."""
+    with rasterio.open(dem) as ds:
+        scale = width / ds.width
+        z = ds.read(1, out_shape=(round(ds.height * scale), width), resampling=Resampling.average,
+                    masked=True).astype(float).filled(np.nan)
+        px = abs(ds.transform.a) / scale
+    lo, hi = float(np.nanmin(z)), float(np.nanmax(z))
+    q = np.round((np.nan_to_num(z, nan=lo) - lo) / (hi - lo) * 65535).astype(np.uint16)
+    q &= 0xFFF0  # ~3.5 m steps: plenty for 560 m pixels, and the PNG compresses
+    rgb = np.stack([q >> 8, q & 255, np.where(np.isnan(z), 0, 255)]).astype(np.uint8)
+    return rgb, {"min_m": round(lo, 1), "max_m": round(hi, 1), "px_m": round(px, 1), "width": width}
+
+
 def build() -> list[Path]:
     src = fetch()
     out = []
@@ -95,6 +111,10 @@ def build() -> list[Path]:
     out.append(_write(hs, SITE_MEDIA / "pole_hillshade.webp", quality=70))
     out.append(_write(hillshade(ROOT / "data" / "derived" / "dem_80s_160m.tif", width=900), APP_STATIC / "pole_hillshade.webp",
                       quality=62))  # Map page basemap
+    hm, meta = heightmap(ROOT / "data" / "derived" / "dem_80s_160m.tif")
+    out.append(_write(hm, SITE_MEDIA / "pole_height.png", "PNG"))
+    (SITE_MEDIA / "pole_height.json").write_text(json.dumps(meta))
+    out.append(SITE_MEDIA / "pole_height.json")
     return out
 
 

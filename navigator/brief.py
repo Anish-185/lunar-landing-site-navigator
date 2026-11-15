@@ -8,9 +8,9 @@ import html
 import pandas as pd
 
 STYLE = """
-body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#15172B;max-width:900px;margin:32px auto;padding:0 20px;line-height:1.5}
-h1{font-family:Fraunces,Georgia,serif;font-weight:400;font-size:2.1rem;margin:0}
-h2{font-family:Fraunces,Georgia,serif;font-weight:400;font-size:1.3rem;margin:1.6rem 0 .4rem;border-bottom:1px solid #DDD}
+body{font-family:Geist,system-ui,sans-serif;color:#15172B;max-width:900px;margin:32px auto;padding:0 20px;line-height:1.5}
+h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:2.1rem;margin:0}
+h2{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:1.3rem;margin:1.6rem 0 .4rem;border-bottom:1px solid #DDD}
 .meta{color:#555;font-size:.92rem}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .card{border:1px solid #DDD;border-radius:12px;padding:12px}.card b{font-size:1.4rem;font-weight:500}
 .good{color:#0F7B5F}.caution{color:#B45309}.bad{color:#C0262D}table{border-collapse:collapse;width:100%;font-size:.9rem}

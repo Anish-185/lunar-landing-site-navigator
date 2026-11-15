@@ -28,3 +28,4 @@ data/derived/.build_state.json
 # Story site build
 site/node_modules/
 site/dist/
+docs/design/refs/
