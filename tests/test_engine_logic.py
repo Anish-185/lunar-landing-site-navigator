@@ -242,3 +242,52 @@ def test_countdowns_have_uncertainty_windows():
         c = cd[k]
         if pd.notna(c["utc"]):
             assert c["earliest"] <= c["utc"] <= c["latest"] and c["hours"] >= 0
+
+
+# --- Slip Replanner ---
+
+def test_landing_date_and_what_changed():
+    from navigator import replan
+
+    assert replan.landing_date("2027-01-01T00:00Z", 5, 42) == pd.Timestamp("2027-02-17T00:00Z")
+    a = {"survives": False, "longest_night_h": 100, "longest_blackout_h": 10, "pct_sunlit": 40, "pct_link": 80,
+         "eclipses": 1}
+    b = {"survives": True, "longest_night_h": 20, "longest_blackout_h": 12, "pct_sunlit": 80, "pct_link": 81,
+         "eclipses": 0}
+    assert replan.what_changed(a, b) == ["battery now survives", "longest night 100 → 20 h", "sunlit 40 → 80 %",
+                                         "avoids the eclipse"]
+    assert replan.what_changed(a, a) == ["about the same"]
+
+
+def test_grid_matches_full_timeline_and_plan_b_never_goes_back_in_time():
+    from navigator import replan
+
+    lander = engine.landers()["precision_100m"]
+    sites = ["artemis_nobile_rim_2", "change_7_target"]
+    df = replan.grid(sites, "2027-02-23T12:00Z", lander, 7, span_days=10, step_days=5)
+    assert len(df) == 2 * 5
+    row = df[(df["site_id"] == "change_7_target") & (df["date"] == pd.Timestamp("2027-02-18T12:00Z"))].iloc[0]
+    s = scores.summary(engine.load_site("change_7_target"),
+                       engine.timeline(engine.load_site("change_7_target"), "2027-02-18T12:00Z", 7, 2.0, lander))
+    assert row["pct_both"] == pytest.approx(s["pct_both"], abs=0.01) and row["survives"] == s["survives"]
+    pb = replan.plan_b(df, "artemis_nobile_rim_2", "2027-02-23T12:00Z")
+    assert pb["original"]["site_id"] == "artemis_nobile_rim_2"
+    assert pb["other_site"]["site_id"] != "artemis_nobile_rim_2"
+    assert pb["same_site"]["date"] >= pb["original"]["date"] and pb["best"]["date"] >= pb["original"]["date"]
+
+
+def test_pareto_front_minimises_distance_and_maximises_both():
+    from navigator import plots
+
+    x = [1.0, 2.0, 3.0, 0.5, 2.5]
+    y = [50, 70, 60, 10, 90]
+    assert list(plots.pareto_front(x, y)) == [3, 0, 1, 4]
+
+
+def test_hillshade_is_bounded_and_flat_is_uniform():
+    from navigator import plots
+
+    flat = plots.hillshade(np.zeros((10, 10)), 20.0, alt_deg=30)
+    assert np.allclose(flat, np.sin(np.radians(30)))
+    ramp = plots.hillshade(np.tile(np.arange(10.0) * 5, (10, 1)), 20.0)
+    assert (0 <= ramp).all() and (ramp <= 1).all()

@@ -20,3 +20,8 @@ One line each: decision + why. Written during the autonomous run of Phases 4–9
 - Phase 6: Map labels only the selected site (others on hover). Why: ten sites within ~100 km of the pole overlapped.
 - Phase 6: media processed with rasterio/GDAL (WEBP/JPEG drivers) instead of adding Pillow. Why: no new dependency or license to vet. Blue Marble taken from NASA SVS 2915 because eoimages.gsfc.nasa.gov timed out.
 - Phase 6: hindcast end-of-mission facts from Wikipedia (facts only, quoted, linked). Why: NASA pages for CLPS missions don't state end times in one place.
+- Phase 7: PGDA product 104 not used: its 13 regions (2022 list) miss Athena by ~30 km (Leibnitz Beta Plateau starts at 85.06°S, Athena is at 84.79°S). Checked from the Zenodo README in minutes, so no 1 GB download. Fallback per the brief: 20 m results plus an explicit "what the map cannot see" step; logged in METHOD limits.
+- Phase 7: "250 m" for Athena's miss is AP's reported figure; we also show our 369 m from LROC's coordinates (target published to two decimals). Why: the brief's headline number needed a source, and the two disagree.
+- Phase 7: crater shadow in the Athena story uses an illustrative depth/diameter of 0.1–0.2, labelled as such. Why: no DEM resolves the crater; the geometry still shows why the floor was dark at a 2.5° Sun.
+- Phase 7: Replanner Plan B only looks at dates on or after the slipped landing. Why: a slipped launch cannot land earlier.
+- Phase 7: blame-the-ridge uses a selectbox of every dark period plus a click on the timeline (not only the click). Why: keyboard accessible, and Plotly point clicks on a line are fiddly.

@@ -17,7 +17,9 @@ ui.setup()
 nav = st.navigation([
     st.Page(PAGES / "site.py", title="Site", icon=":material/wb_twilight:", default=True),
     st.Page(PAGES / "compare.py", title="Compare", icon=":material/compare_arrows:"),
+    st.Page(PAGES / "replan.py", title="Slip Replanner", icon=":material/event_repeat:"),
     st.Page(PAGES / "map.py", title="Map", icon=":material/map:"),
+    st.Page(PAGES / "athena.py", title="Athena replay", icon=":material/history:"),
     st.Page(PAGES / "evidence.py", title="Evidence", icon=":material/verified:"),
 ], position="top")
 st.session_state["_scenario"] = ui.sidebar()

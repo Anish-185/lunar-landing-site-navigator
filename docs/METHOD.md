@@ -2,7 +2,7 @@
 
 Kept up to date with the code (CLAUDE.md rule 7). Each section gives what we compute, which library or NASA product does it, and what it does not model.
 
-Status: Phase 6 (Streamlit app on the Phase 5 engine and the Phase 3–4 terrain and build). Sections marked *planned* describe the intended method; they are rewritten when the code lands.
+Status: Phase 7 (differentiators: Slip Replanner, blame the ridge, landing-zone odds panel, mast curve, science vs engineering, Athena replay) on the Phase 6 app. Sections marked *planned* describe the intended method; they are rewritten when the code lands.
 
 ## Conventions
 
@@ -129,6 +129,16 @@ Streamlit (`app/Home.py` routes to `app/pages/`), Plotly for every chart, no net
 
 Design: one stylesheet (`app/style.css`), `.streamlit/config.toml` theme, shared Plotly template `gnomon` in `navigator/plots.py`. Colour carries meaning only: Sun gold, Earth blue, terrain grey, red for no-go/failure; every status also has an icon and a word (Go / Caution / No-go).
 
+## Differentiators (Phase 7)
+
+- **Slip Replanner** (`navigator/replan.py`, page "Slip Replanner"). Landing = launch + cruise (lander preset) + slip. For each candidate site (catalog polar sites, IM-2 target excluded as a duplicate) the hourly timeline is computed once over the slipped landing ± 60 days plus the mission length; every landing date is then a window into it: % Sun and link from the window, battery survival for all dates at once (a dates × hours power matrix through the same battery model). 13 sites × 121 dates take ~4 s. Plan B cards: another site on the slipped day, the same site on a later day, and the best on or after the slipped day (a slipped launch cannot land earlier); ranking = % Sun and link with battery failure pushed to the bottom; ties go to the earliest date. "What changed" diffs the two `scores.summary` results (battery, longest night/blackout ≥ 6 h, sunlit/link ≥ 5 points, eclipses). A test checks that the grid matches a full single-scenario run.
+- **Blame the ridge** (Site page). Every night and comms blackout in the mission is listed; clicking the timeline picks the one under the cursor. For a hidden body the reason names the occluder at its azimuth (feature, relation, distance, azimuth); for Earth above the terrain the reason is low clearance (multipath) or no DSN dish. "Show on map" marks the occluder's polar stereographic x/y on the Map page (catalog sites; only for occluders ≥ 500 m away).
+- **Landing-zone panel**: `ellipse_odds` over 20 m LOLA relief around the site (`data/derived/relief/<site>.npz`, ±400 m, from the cached 20 m windows), pass = gold circle, fail = red cross with the failed tests on hover, plus per-criterion pass rates.
+- **Mast curve**: the same mission with the mast at 1–20 m (horizon interpolated between the computed masts), with NASA's Vertical Solar Array Technology class marked at 10 m.
+- **Science vs engineering**: ellipse points and catalog sites, distance to the nearest PSR against % Sun and link; the Pareto frontier (closer to permanent shadow and better lit) is highlighted.
+- **Athena replay** (page). Touchdown 2025-03-06 17:28:50 UTC at LROC's resting spot (84.7906°S, 29.1957°E). AP reported Athena about 250 m from its target; LROC's positions (target given to two decimals) differ by 369 m. Sun 2.5° up at az 66°: a 1 m boulder casts a 23 m shadow; 0% of the landing zone is in terrain shadow at 20 m, and the MMGIS sightmap snapshot of the 600 m square is fully lit. Intuitive Machines attributed the navigation error to long shadows and dim polar lighting. A 10-day mission at the 200 points around the target passes all four tests at 100% (upright lander, illustrative Nova-C preset). LROC found Athena on its side in a 20 m crater: one pixel of the 20 m DEM. With an illustrative depth of 0.1–0.2 × diameter, at 2.5° the rim casts a 46–93 m shadow, so the crater floor was dark.
+- **PGDA product 104 (5 m shape-from-shading DEMs, Bertone et al.) does not cover Athena.** The archive (Zenodo 10.5281/zenodo.17954508, CC BY 4.0) covers the 13 Artemis III regions of 2022; the nearest, Leibnitz Beta Plateau, spans 85.06–85.79°S, and Athena is at 84.79°S, ~30 km outside it. We checked the region bounds in the archive README before downloading anything. No public DEM we know of resolves Athena's crater, and the story says so.
+
 ## Known limits
 
 - Azimuth "local north" is undefined exactly at a pole; behaviour for sites within a few metres of ±90° latitude has not been checked yet.
@@ -139,6 +149,7 @@ Design: one stylesheet (`app/style.css`), `.streamlit/config.toml` theme, shared
 - Terrain coverage ends at 80°S (the edge of the PGDA 90 mosaics). Horizons for sites near that edge miss terrain beyond it.
 - Artemis region coordinates are centres measured from NASA's map (a few km uncertainty), and the Blue Moon MK1 and Chang'e-7 targets are unofficial; lander presets are illustrative unless a source is cited.
 - Elevations are above the smooth 1737.4 km sphere: no terrain yet (Phase 3), no refraction (there is no atmosphere). The observer is at height 0 unless a mast height is given.
+- Orbital terrain misses small craters: Athena's 20 m crater is one pixel of the 20 m LOLA DEM, and PGDA's 5 m SfS DEMs do not cover its site. Landing-light shadow fractions and ellipse odds see only terrain larger than ~40 m.
 - Comm-quality thresholds are assumptions (user-editable), not a link budget: no antenna patterns, no fading statistics, no data rates.
 - Hourly sampling: events are interpolated between samples (minutes of error); a Sun or Earth glimpse shorter than an hour can be missed.
 - Ellipse points use the site's Sun/Earth directions and the 20 m slope (a 20 m baseline, not NASA's 100 m), and a 2 m deck height.

@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -71,10 +73,84 @@ st.caption("Panorama of the whole horizon: compass direction across, elevation u
 
 # --- timeline ---
 st.markdown("### Hour by hour")
-st.plotly_chart(plots.timeline(tl), config=plots.CONFIG, key="timeline")
+ev = st.plotly_chart(plots.timeline(tl), config=plots.CONFIG, key="timeline", on_select="rerun",
+                     selection_mode="points")
 st.caption("Top: how far the Sun (gold) and Earth (blue) clear the terrain; gold shading marks sunlight, red "
            "crosses mark eclipses. Middle: link quality (blue good, pale blue marginal, orange poor, red none). "
-           "Bottom: battery charge with the 20 % floor.")
+           "Bottom: battery charge with the 20 % floor. Click a dark stretch to see which ridge is to blame.")
+
+# --- blame the ridge ---
+dark = ui.dark_periods(tl)
+if len(dark):
+    st.markdown("### Who turned out the lights?")
+    pts = ev.selection.points if ev and ev.selection else []
+    if pts:
+        clicked = pd.Timestamp(pts[0]["x"]).tz_localize("UTC") if pd.Timestamp(pts[0]["x"]).tzinfo is None else pd.Timestamp(pts[0]["x"])
+        hit = dark[(dark["start"] <= clicked) & (dark["end"] >= clicked)]
+        if len(hit):
+            st.session_state["dark_pick"] = int(hit.index[0])
+    if st.session_state.get("dark_pick", 0) >= len(dark):
+        st.session_state["dark_pick"] = 0
+    label = lambda i: (f"{dark.loc[i, 'what']}: {dark.loc[i, 'hours']:.0f} h from "
+                       f"{dark.loc[i, 'start']:%-d %b %H:%M} UTC")
+    pick = st.selectbox("Dark period", dark.index, format_func=label, key="dark_pick")
+    d = dark.loc[pick]
+    i = min(int(pd.DatetimeIndex(tl["utc"]).searchsorted(d["start"])), len(tl) - 1)
+    r = tl.iloc[i]
+    body = d["body"]
+    j, k = site.mast_row(sc["mast"]), int(r[f"{body}_occ"])
+    hidden = r[f"{body}_clear"] + r[f"{body}_r"] <= 0
+    if hidden:
+        line = scores.blame_at(site, sc["mast"], body, float(r[f"{body}_az"]), float(r[f"{body}_el"]), r["utc"])
+    elif body == "earth" and r["dsn"]:
+        line = f"Earth only {r['earth_clear']:.1f}° above the terrain: too low for a clean link (multipath)."
+    elif body == "earth":
+        line = "No Deep Space Network dish can see the Moon then."
+    else:
+        line = "The Sun is partly hidden or eclipsed."
+    st.markdown(f"<p class='g-say'>{line}</p>", unsafe_allow_html=True)
+    ox, oy = site.occ_x[j, k], site.occ_y[j, k]
+    if hidden and site.has_terrain and np.isfinite(ox) and site.dist[j, k] >= 500 and site.lat <= -80:
+        name = str(site.occ_name[j, k]) or "ridge"
+        if st.button(f"Show the {name} ridge on the map", icon=":material/location_on:"):
+            st.session_state["occluder_marker"] = (float(ox), float(oy), name)
+            st.switch_page(Path(__file__).with_name("map.py"))
+
+# --- landing zone ---
+o = None if site.custom else ui.odds(site.id, sc["start"], sc["days"], sc["lander_key"])
+rel = None if site.custom else ui.relief(site.id)
+if o is not None and rel is not None:
+    st.markdown("### Landing-zone odds")
+    a, b = st.columns([1, 2])
+    a.markdown(ui.card("Odds of a good landing", "locate-fixed", plots.SUN,
+                       "good" if o["p_success"] >= 0.8 else "caution" if o["p_success"] >= 0.4 else "bad",
+                       f"{100 * o['p_success']:.0f}", f"% of {o['n']} landing points pass all four",
+                       [f"Landing ellipse: σ = {sc['lander']['ellipse_sigma_m']} m on each axis.",
+                        "Each point has its own horizon, slope and distance to permanent shadow.",
+                        "Slope limit 10°: NASA's Artemis III requirement (over 100 m)."]), unsafe_allow_html=True)
+    a.plotly_chart(plots.criteria_bars(o["rates"]), config=plots.CONFIG, key="crit")
+    b.plotly_chart(plots.odds_scatter(rel, o), config=plots.CONFIG, key="odds")
+    st.caption("Right: the 200 precomputed landing points over 20 m LOLA relief; gold circles pass slope, battery, "
+               "link and touchdown light, red crosses fail at least one (hover for which). Left: share of points "
+               "passing each test. Craters smaller than ~40 m are not in the 20 m terrain.")
+elif site.custom:
+    st.info("Landing-zone odds need precomputed ellipse points, which exist for catalog polar sites only.",
+            icon=":material/info:")
+
+with st.expander("Would a taller mast help?"):
+    mt = ui.mast_table(site.id, site.lat, site.lon, sc["start"], sc["days"], sc["lander_key"])
+    st.plotly_chart(plots.mast_curve(mt, sc["mast"]), config=plots.CONFIG, key="mast_curve")
+    st.caption("Sunlight (gold) and usable link (blue) for the same mission with the solar array or antenna raised "
+               "from 1 to 20 m. The dashed line marks 10 m, the class of NASA's Vertical Solar Array Technology masts.")
+
+if not site.custom and site.lat <= -80:
+    with st.expander("Science vs engineering: ice is in the dark, power is in the light"):
+        pt = ui.pareto_table(site.id, sc["start"], sc["days"], sc["lander_key"])
+        st.plotly_chart(plots.pareto_figure(pt), config=plots.CONFIG, key="pareto")
+        st.caption("Each point is a landing point in this ellipse (grey) or a catalog site (white diamond), same dates. "
+                   "Across: distance to the nearest permanently shadowed region (where water ice can survive). Up: "
+                   "share of the mission with both Sun and a link. Gold joins the best trade-offs: nothing is both "
+                   "closer to the shadow and better lit.")
 
 if sc["expert"]:
     cols = ["utc", "sun_az", "sun_el", "sun_h", "sun_clear", "sun_frac", "eclipse", "eff_sun", "earth_az", "earth_el",

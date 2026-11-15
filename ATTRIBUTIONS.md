@@ -127,6 +127,12 @@ Pulled in by the pipeline packages above (mostly GDAL, GeoPandas, Shapely) and i
 - JPL LRO–DSN multipath measurement campaign near the lunar south pole, IPN Progress Reports 42-222 (2020) and 42-226 (2021): https://ipnpr.jpl.nasa.gov/progress_report/42-222/42-222C.html, https://ipnpr.jpl.nasa.gov/progress_report/42-226/42-226D.html
 - Other references are listed in `docs/plan/competitive-analysis.md` and added here as features use them.
 
+- Bertone, S., McKenna, T. E., Barker, M. K., Mazarico, E., Beyer, R. A., and Petro, N., Enhanced Topography Models for selected Lunar South Pole regions with Shape-from-Shading, PSJ, doi:10.3847/PSJ/ae5b70; data PGDA product 104 / Zenodo doi:10.5281/zenodo.17954508 (CC BY 4.0). Only the archive README (region bounds) was read: it showed no region covers the IM-2 site, so no DEM was downloaded: https://pgda.gsfc.nasa.gov/products/104
+- LROC, "IM-2 Athena Seen Obliquely" (Athena on its side in a 20 m crater; resting coordinates): https://lroc.im-ldi.com/images/1408
+- Associated Press, Athena ~250 m (820 ft) from its target, in a crater (as syndicated): https://www.expressandstar.com/world-news/private-lunar-lander-dead-after-landing-in-crater-near-moons-south-pole-5717533
+- Gizmodo, Intuitive Machines' explanation (long shadows and dim polar lighting confused navigation): https://gizmodo.com/intuitive-machines-reveals-why-its-moon-lander-faceplanted-into-a-crater-2000602752
+- Wikipedia (facts only, quoted and linked on the Evidence page): end-of-mission statements for Chandrayaan-3, IM-1, IM-2 and Blue Ghost Mission 1 (`pipeline/hindcast.yaml`)
+
 ## AI assistance
 
 Code is written with Claude Code (Anthropic) from prompts by the team; the team reviews and tests it and is responsible for all of it.

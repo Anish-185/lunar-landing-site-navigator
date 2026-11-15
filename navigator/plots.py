@@ -218,3 +218,118 @@ def compare_bars(df: pd.DataFrame) -> go.Figure:
                              hovertemplate="%{x}<br>%{y:.0f} %<extra>" + name + "</extra>"))
     fig.update_layout(template="gnomon", barmode="group", height=360, yaxis=dict(range=[0, 100], ticksuffix=" %"))
     return fig
+
+
+def hillshade(z: np.ndarray, cell_m: float, az_deg: float = 315.0, alt_deg: float = 20.0) -> np.ndarray:
+    """0-1 shaded relief of a height grid (rows north-up), Sun from az_deg at alt_deg."""
+    zz = np.nan_to_num(z, nan=np.nanmean(z))
+    gy, gx = np.gradient(zz, cell_m)
+    gy = -gy  # rows go south
+    slope = np.arctan(np.hypot(gx, gy))
+    aspect = np.arctan2(-gx, -gy)
+    az, alt = np.radians(az_deg), np.radians(alt_deg)
+    return np.clip(np.sin(alt) * np.cos(slope) + np.cos(alt) * np.sin(slope) * np.cos(az - aspect), 0, 1)
+
+
+def odds_scatter(relief: dict, odds: dict, extra_points: list | None = None, height: int = 520) -> go.Figure:
+    """Landing-ellipse points over the 20 m relief: pass = gold circle, fail = red cross. Axes in metres from the
+    site (polar stereographic)."""
+    sx, sy = float(relief["site_x"]), float(relief["site_y"])
+    hs = hillshade(relief["z"], float(relief["cell_m"]))
+    fig = go.Figure(go.Heatmap(x=relief["x"] - sx, y=relief["y"] - sy, z=hs, colorscale=[[0, "#0B0D1A"], [1, "#B9BBC6"]],
+                               showscale=False, hoverinfo="skip"))
+    pts = odds["points"]
+    for ok, name, sym, col in ((True, "Passes all four", "circle", SUN), (False, "Fails at least one", "x", ALARM)):
+        p = pts[pts["pass_all"] == ok]
+        why = p.apply(lambda r: ", ".join(k for k, c in (("slope", "pass_slope"), ("power", "pass_power"),
+                                                         ("comms", "pass_comms"), ("light", "pass_light"))
+                                         if not r[c]) or "all pass", axis=1)
+        fig.add_trace(go.Scatter(x=p["x"] - sx, y=p["y"] - sy, mode="markers", name=name,
+                                 marker=dict(symbol=sym, size=9 if ok else 8, color=col,
+                                             line=dict(color=VOID if ok else col, width=1)),
+                                 customdata=np.c_[p["slope_deg"], p["pct_both"], why],
+                                 hovertemplate="slope %{customdata[0]:.1f}°<br>Sun + link %{customdata[1]:.0f} %"
+                                               "<br>fails: %{customdata[2]}<extra></extra>"))
+    for x, y, label, col in extra_points or []:
+        fig.add_trace(go.Scatter(x=[x - sx], y=[y - sy], mode="markers+text", text=[label], textposition="top center",
+                                 marker=dict(symbol="diamond", size=14, color=col, line=dict(color=VOID, width=1.5)),
+                                 textfont=dict(color=INK), name=label, hoverinfo="text"))
+    fig.update_layout(template="gnomon", height=height, xaxis=dict(title="metres east (map x)", scaleanchor="y",
+                                                                     constrain="domain"),
+                      yaxis=dict(title="metres north (map y)"), margin=dict(l=60, r=10, t=40, b=50))
+    return fig
+
+
+def criteria_bars(rates: dict) -> go.Figure:
+    names = {"slope": "Slope ≤ 10°", "power": "Battery survives", "comms": "Link ≥ 50 %", "light": "Sun at touchdown"}
+    keys = list(rates)
+    vals = [100 * rates[k] for k in keys]
+    fig = go.Figure(go.Bar(x=vals, y=[names[k] for k in keys], orientation="h",
+                           marker_color=[GO if v >= 90 else CAUTION if v >= 50 else ALARM for v in vals],
+                           text=[f"{v:.0f} %" for v in vals], textposition="outside",
+                           hovertemplate="%{y}: %{x:.0f} % of landing points<extra></extra>"))
+    fig.update_layout(template="gnomon", height=230, xaxis=dict(range=[0, 115], ticksuffix=" %"),
+                      margin=dict(l=130, r=20, t=20, b=30), yaxis=dict(autorange="reversed"))
+    return fig
+
+
+def mast_curve(df: pd.DataFrame, current: float) -> go.Figure:
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df["mast_m"], y=df["pct_sunlit"], name="Sunlit", mode="lines+markers",
+                             line=dict(color=SUN, width=2.5)))
+    fig.add_trace(go.Scatter(x=df["mast_m"], y=df["pct_link"], name="Link usable", mode="lines+markers",
+                             line=dict(color=EARTH, width=2.5)))
+    fig.add_vline(x=10, line=dict(color=INK_DIM, dash="dash"), annotation_text="NASA VSAT mast class (10 m)",
+                  annotation_font_color=INK_DIM, annotation_position="top left")
+    fig.add_vline(x=current, line=dict(color=INK, width=1), annotation_text="this plan", annotation_font_color=INK)
+    fig.update_layout(template="gnomon", height=330, xaxis=dict(title="Mast height (m)"),
+                      yaxis=dict(title="% of the mission", range=[0, 105]))
+    return fig
+
+
+def pareto_front(x, y) -> np.ndarray:
+    """Indices of points not dominated when x is minimised and y maximised, sorted by x."""
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    order = np.lexsort((-y, x))
+    best, keep = -np.inf, []
+    for i in order:
+        if y[i] > best:
+            keep.append(i)
+            best = y[i]
+    return np.array(keep, int)
+
+
+def pareto_figure(df: pd.DataFrame) -> go.Figure:
+    """Science (close to permanent shadow, where the ice is) vs engineering (Sun + link): frontier highlighted."""
+    front = df.iloc[pareto_front(df["psr_km"], df["pct_both"])]
+    fig = go.Figure()
+    for kind, col, sym in (("Landing point", TERRAIN, "circle"), ("Catalog site", INK, "diamond")):
+        d = df[df["kind"] == kind]
+        fig.add_trace(go.Scatter(x=d["psr_km"], y=d["pct_both"], mode="markers", name=kind, text=d["label"],
+                                 marker=dict(color=col, symbol=sym, size=7 if kind == "Landing point" else 11, opacity=0.8),
+                                 hovertemplate="%{text}<br>%{x:.1f} km to permanent shadow<br>Sun + link %{y:.0f} %<extra></extra>"))
+    fig.add_trace(go.Scatter(x=front["psr_km"], y=front["pct_both"], mode="lines+markers", name="Best trade-offs",
+                             line=dict(color=SUN, width=2), marker=dict(color=SUN, size=9), text=front["label"],
+                             hovertemplate="%{text}<extra>Pareto frontier</extra>"))
+    fig.update_layout(template="gnomon", height=380, xaxis=dict(title="Distance to the nearest permanently shadowed region (km)"),
+                      yaxis=dict(title="Sun and link at once (% of mission)", range=[0, 105]))
+    return fig
+
+
+def replan_heatmap(df: pd.DataFrame, landing, original_site: str, height: int = 560) -> go.Figure:
+    """Rows = sites, columns = landing dates; colour = % Sun and link; crosses where the battery fails."""
+    piv = df.pivot_table(index="name", columns="date", values="pct_both", sort=False)
+    fail = df[~df["survives"]]
+    scale = [[0, "#0B0F2E"], [0.3, "#3B3150"], [0.6, "#C2793A"], [0.85, SUN], [1, "#FFF1C9"]]
+    fig = go.Figure(go.Heatmap(x=piv.columns, y=piv.index, z=piv.values, colorscale=scale, zmin=0, zmax=100,
+                               colorbar=dict(title=dict(text="Sun + link %", side="right"), thickness=10),
+                               hovertemplate="%{y}<br>land %{x|%-d %b %Y}<br>Sun + link %{z:.0f} %<extra></extra>"))
+    fig.add_trace(go.Scatter(x=fail["date"], y=fail["name"], mode="markers", name="Battery fails",
+                             marker=dict(symbol="x-thin", size=6, color=ALARM, line=dict(width=1.5, color=ALARM)),
+                             hovertemplate="%{y}, %{x|%-d %b}: battery fails<extra></extra>"))
+    fig.add_vline(x=pd.Timestamp(landing), line=dict(color=INK, width=1.5, dash="dot"))
+    fig.add_annotation(x=pd.Timestamp(landing), y=1.02, yref="paper", text="slipped landing", showarrow=False,
+                       font=dict(color=INK, size=12), xanchor="left")
+    fig.update_layout(template="gnomon", height=height, margin=dict(l=210, r=20, t=40, b=40),
+                      yaxis=dict(autorange="reversed"), legend=dict(y=1.08, x=1, xanchor="right"))
+    return fig

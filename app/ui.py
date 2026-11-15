@@ -213,3 +213,61 @@ def site_header(sc: dict) -> None:
     st.markdown(f"<div class='g-site-meta'><b>{abs(s.lat):.3f}° S, {s.lon:.3f}° E</b> &nbsp; {src.get(s.horizon_source, s.horizon_source)}"
                 f" &nbsp; landing {sc['start'].strftime('%-d %b %Y %H:%M UTC')}, {sc['days']} days, "
                 f"{sc['mast']:g} m mast, {html.escape(sc['lander']['name'])}{coarse}</div>", unsafe_allow_html=True)
+
+
+@st.cache_data(show_spinner="Flying 200 landings across the ellipse...", max_entries=32)
+def odds(site_id: str, start: pd.Timestamp, days: int, lander_key: str):
+    site = engine.load_site(site_id)
+    tile = engine.load_tile(site_id)
+    if tile is None:
+        return None
+    tl = engine.timeline(site, start, days, 2.0, engine.landers()[lander_key])
+    return landing.ellipse_odds(tile, tl, engine.landers()[lander_key])
+
+
+@st.cache_data(show_spinner=False, max_entries=32)
+def relief(site_id: str):
+    p = engine.DERIVED / "relief" / f"{site_id}.npz"
+    if not p.exists():
+        return None
+    with np.load(p) as z:
+        return {k: z[k] for k in z.files}
+
+
+@st.cache_data(show_spinner="Raising the mast...", max_entries=32)
+def mast_table(site_id: str, lat: float, lon: float, start: pd.Timestamp, days: int, lander_key: str):
+    site = _site(CUSTOM if site_id.startswith("custom_") else site_id, lat, lon)
+    eph = engine.ephemeris(site, start, start + pd.Timedelta(days=days))
+    rows = []
+    for m in (1, 2, 3, 5, 7.5, 10, 12.5, 15, 20):
+        tl = engine.timeline(site, start, days, m, engine.landers()[lander_key], eph=eph)
+        rows.append({"mast_m": m, "pct_sunlit": 100 * tl["sunlit"].mean(), "pct_link": 100 * tl["link"].mean()})
+    return pd.DataFrame(rows)
+
+
+@st.cache_data(show_spinner="Weighing ice against sunlight...", max_entries=16)
+def pareto_table(site_id: str, start: pd.Timestamp, days: int, lander_key: str):
+    o = odds(site_id, start, days, lander_key)
+    rows = []
+    if o is not None:
+        p = o["points"]
+        rows += [{"kind": "Landing point", "label": f"Ellipse point {i}", "psr_km": r["psr_dist_m"] / 1000,
+                  "pct_both": r["pct_both"]} for i, r in p.iterrows()]
+    psr = pd.read_csv(engine.DERIVED / "site_psr.csv").dropna(subset=["psr_dist_m"])
+    for _, r in psr.iterrows():
+        s = engine.load_site(r["site_id"])
+        _, summ, _ = run(s.id, s.lat, s.lon, start, days, 2.0, lander_key)
+        rows.append({"kind": "Catalog site", "label": s.name, "psr_km": r["psr_dist_m"] / 1000,
+                     "pct_both": summ["pct_both"]})
+    return pd.DataFrame(rows)
+
+
+def dark_periods(tl: pd.DataFrame) -> pd.DataFrame:
+    """Every interval with no Sun or no usable link, longest first (for blame-the-ridge)."""
+    out = []
+    for body, col, word in (("sun", "sunlit", "Night"), ("earth", "link", "Comms blackout")):
+        w = events.windows(tl["utc"], ~tl[col].to_numpy(bool))
+        for _, r in w.iterrows():
+            out.append({"body": body, "what": word, "start": r["start"], "end": r["end"], "hours": max(r["duration_h"], 1)})
+    df = pd.DataFrame(out)
+    return df.sort_values("hours", ascending=False).reset_index(drop=True) if len(df) else df
