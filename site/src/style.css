@@ -357,3 +357,4 @@ table.ev td:nth-child(2), table.ev td:nth-child(3) { font-family: var(--mono); f
   .pole-copy { position: relative; left: auto; bottom: auto; top: auto; margin: 70vh var(--gutter) 6vh; }
   .sun-handle { position: relative; right: auto; bottom: auto; margin: 0 var(--gutter) 6vh; text-align: left; }
 }
+.console-note { display: block; margin-top: var(--s-3); color: var(--ink-dim); font-size: .8125rem; }

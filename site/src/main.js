@@ -333,7 +333,15 @@ $("#athena-cap").textContent = `20 m LOLA relief, lit from the Sun's direction a
     const load = new IntersectionObserver((es) => {
       if (!es[0].isIntersecting) return;
       load.disconnect();
-      frame.innerHTML = `<iframe src="${url}/?embed=true&embed_options=dark_theme" title="Gnomon mission console" loading="lazy" allow="clipboard-write"></iframe>`;
+      // Streamlit Community Cloud's own embed wrapper sizes the app to its content height (0 for this full-height app),
+      // so on *.streamlit.app frame the app server path the wrapper itself loads (/~/+/). "Open full screen" keeps the
+      // wrapper URL, which shows Cloud's wake-up button if the app is asleep.
+      const embed = /\.streamlit\.app$/.test(new URL(url).hostname) ? `${url}/~/+/` : `${url}/`;
+      frame.innerHTML = `<iframe src="${embed}?embed=true&embed_options=dark_theme" title="Gnomon mission console" loading="lazy" allow="clipboard-write"></iframe>`;
+      const note = document.createElement("span");
+      note.className = "console-note";
+      note.textContent = "Blank or asleep? Open it full screen and click “Yes, get this app back up” (about 30 s).";
+      open.after(note);
     }, { rootMargin: "50% 0px" });
     load.observe(frame);
   } else {

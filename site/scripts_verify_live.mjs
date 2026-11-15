@@ -41,6 +41,9 @@ await s.evaluate(() => document.getElementById("console").scrollIntoView());
 await s.waitForTimeout(3000);
 const src = await s.locator("#console-frame iframe").getAttribute("src").catch(() => null);
 ok(!!src && src.startsWith(appUrl) && src.includes("embed=true"), `console iframe src: ${src}`);
+// the app frame must fill the console box (Cloud's own embed wrapper collapsed it to 150 px)
+const appH = await s.locator("#console-frame iframe").evaluate((el) => el.getBoundingClientRect().height);
+ok(appH > 400, `console iframe height ${Math.round(appH)} px`);
 // the Streamlit app renders inside the (Cloud) iframe chain
 let rendered = false;
 for (let i = 0; i < 40 && !rendered; i++) {
@@ -50,6 +53,9 @@ for (let i = 0; i < 40 && !rendered; i++) {
   if (!rendered) await s.waitForTimeout(3000);
 }
 ok(rendered, "console iframe renders the Streamlit app");
+const inner = s.frames().find((f) => f !== s.mainFrame() && f.url().includes("embed=true"));
+const innerH = inner ? await inner.evaluate(() => innerHeight).catch(() => 0) : 0;
+ok(innerH > 400, `app viewport inside the console is ${innerH} px tall`);
 if (shots) { await s.waitForTimeout(6000); await s.screenshot({ path: `${shots}/live_console.png` }); }
 const href = await s.locator("#console-open").getAttribute("href");
 ok(href === appUrl, `"Open full screen" href: ${href}`);
